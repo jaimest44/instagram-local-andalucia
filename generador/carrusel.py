@@ -1,0 +1,525 @@
+"""Dibuja los carruseles de @localandalucia (1080x1350, tema oscuro de la marca).
+
+Formatos:
+  - test        pregunta · solucion · trampa · cta
+  - corta       caso (1-2) · pregunta · solucion · trampa · cta          (supuesto con opciones)
+  - desarrollo  caso (1-2) · pregunta · respuesta modelo (1-3) · cta     (supuesto sin opciones)
+  - infraccion  conducta + "¿leve, grave o muy grave?" · solucion · cta
+
+Prueba rapida:
+    python carrusel.py "20. RECURSOS IA/CODIFICADO/TRÁFICO COMPLETO - CODIFICADO.xlsx#4"
+"""
+import os
+import re
+import sys
+
+from PIL import Image, ImageDraw, ImageFont
+
+from datos import RAIZ, acortar, es_desarrollo
+
+LOGO = os.path.join(RAIZ, "30. IMÁGENES", "LOGO", "LOCAL ANDALUCÍA.png")
+URL_APP = "app.localandalucia.com"
+USUARIO = "@localandalucia"
+
+W, H = 1080, 1350
+M = 70  # margen lateral
+TOP = 330  # donde empieza el contenido (debajo de la cabecera)
+LIMITE = H - 150  # por debajo va el pie
+MIN_CASO = 350  # mas corto suele ser solo la introduccion del supuesto
+
+# Paleta de la marca (logo y posts anteriores)
+FONDO = (8, 12, 40)
+TARJETA = (19, 27, 62)
+BORDE = (44, 56, 104)
+CIAN = (92, 225, 230)
+BLANCO = (255, 255, 255)
+TEXTO = (226, 230, 242)
+GRIS = (150, 160, 192)
+PILDORA = (214, 218, 226)
+VERDE = (52, 199, 120)
+NARANJA = (245, 166, 35)
+ROJO = (235, 87, 87)
+MORADO = (176, 146, 255)
+
+GRAVEDAD = {"leve": VERDE, "grave": NARANJA, "muy grave": ROJO}
+
+FUENTES = "C:/Windows/Fonts/"
+TIT = "segoeuib.ttf"
+TXT = "segoeui.ttf"
+TXT_B = "segoeuib.ttf"
+TXT_SB = "seguisb.ttf"
+TXT_I = "segoeuii.ttf"
+
+_cache = {}
+
+
+def fuente(nombre, tam):
+    if (nombre, tam) not in _cache:
+        try:
+            _cache[(nombre, tam)] = ImageFont.truetype(FUENTES + nombre, tam)
+        except OSError:
+            _cache[(nombre, tam)] = ImageFont.truetype(FUENTES + TXT_B, tam)
+    return _cache[(nombre, tam)]
+
+
+# ---------------------------------------------------------------- texto
+
+def envolver(draw, texto, f, ancho):
+    lineas = []
+    for parrafo in texto.split("\n"):
+        actual = ""
+        for p in parrafo.split():
+            prueba = (actual + " " + p).strip()
+            if draw.textlength(prueba, font=f) <= ancho:
+                actual = prueba
+            else:
+                if actual:
+                    lineas.append(actual)
+                actual = p
+        lineas.append(actual)
+    return lineas
+
+
+def ajustar(draw, texto, nombre, ancho, alto, maximo, minimo=22, interlineado=1.3):
+    for tam in range(maximo, minimo - 1, -2):
+        f = fuente(nombre, tam)
+        lineas = envolver(draw, texto, f, ancho)
+        if len(lineas) * tam * interlineado <= alto:
+            return f, lineas, tam
+    f = fuente(nombre, minimo)
+    return f, envolver(draw, texto, f, ancho), minimo
+
+
+def escribir(draw, xy, lineas, f, tam, color, interlineado=1.3):
+    x, y = xy
+    for ln in lineas:
+        draw.text((x, y), ln, font=f, fill=color)
+        y += int(tam * interlineado)
+    return y
+
+
+def paginar(texto, nombre, tam, ancho, alto, interlineado=1.4):
+    d = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    lineas = envolver(d, texto, fuente(nombre, tam), ancho)
+    por_pag = max(1, int(alto // (tam * interlineado)))
+    paginas = [lineas[i:i + por_pag] for i in range(0, len(lineas), por_pag)]
+    return [pg if pg and pg[0] else pg[1:] for pg in paginas]
+
+
+def sin_mayusculas(t):
+    """Pasa a tipo frase los textos escritos enteros en mayusculas."""
+    letras = [c for c in t if c.isalpha()]
+    if letras and sum(c.isupper() for c in letras) / len(letras) > 0.8:
+        t = t.lower()
+        t = re.sub(r"(^|[.!?]\s+)(\w)", lambda m: m.group(1) + m.group(2).upper(), t)
+        t = re.sub(r"\b(dgt|itv|vtc|cp|ce|ue|sp|lsv|rgc|ss\.ss|i{1,3}|iv|vi{0,3}|ix|x)\b",
+                   lambda m: m.group(1).upper(), t)
+    return t
+
+
+def formatear_respuesta(t):
+    t = re.sub(r"\s+(?=(?:[a-h]\)|\d{1,2}\.\s|[-•]\s)\s*[A-ZÁÉÍÓÚ])", "\n", t)
+    return t.strip()
+
+
+def frase_relevante(literal, respuesta):
+    partes = [x.strip() for x in re.split(r"\n+|(?<=\.)\s+(?=\d+\.\s)", literal) if x.strip()]
+    if not partes:
+        return literal
+    clave = set(w.lower() for w in re.findall(r"\w{4,}", respuesta))
+    return max(partes, key=lambda x: len(clave & set(w.lower() for w in re.findall(r"\w{4,}", x))))
+
+
+def cuantia_legible(c):
+    """'80 / 40' -> '80 € (40 € con pronto pago)';  '2.001 / 10.000' -> '2.001 a 10.000 €'."""
+    m = re.match(r"^\s*([\d.,]+)\s*/\s*([\d.,]+)\s*€?\s*$", c)
+    if not m:
+        return c
+    num = lambda s: float(s.replace(".", "").replace(",", "."))
+    a, b = m.group(1), m.group(2)
+    if num(a) > num(b):
+        return f"{a} € ({b} € con pronto pago)"
+    return f"{a} a {b} €"
+
+
+# ---------------------------------------------------------------- piezas comunes
+
+_logo = None
+
+
+def logo():
+    """Logo blanco y cian con fondo transparente."""
+    global _logo
+    if _logo is None:
+        img = Image.open(LOGO).convert("RGB")
+        img = img.crop(img.convert("L").point(lambda v: 255 if v > 40 else 0).getbbox())
+        img = img.convert("RGBA")
+        img.putdata([(r, g, b, min(255, max(r, g, b) * 2)) for r, g, b, _ in img.getdata()])
+        alto = 105
+        _logo = img.resize((int(img.width * alto / img.height), alto), Image.LANCZOS)
+    return _logo
+
+
+def texto_espaciado(d, centro_x, y, texto, f, color, espacio=4):
+    ancho = sum(d.textlength(c, font=f) for c in texto) + espacio * (len(texto) - 1)
+    x = centro_x - ancho / 2
+    for c in texto:
+        d.text((x, y), c, font=f, fill=color)
+        x += d.textlength(c, font=f) + espacio
+
+
+def lienzo(titulo_pildora):
+    img = Image.new("RGB", (W, H), FONDO)
+    d = ImageDraw.Draw(img)
+    # brillo suave de fondo en la esquina
+    for i in range(6):
+        r = 520 - i * 70
+        d.ellipse((W - r // 2 - 60, -r // 2, W + r // 2 - 60, r // 2), fill=(10 + i, 16 + i * 2, 50 + i * 4))
+    d.text((W // 2, 46), USUARIO, font=fuente(TXT_SB, 26), fill=GRIS, anchor="mm")
+    lg = logo()
+    img.paste(lg, ((W - lg.width) // 2, 82), lg)
+    f = fuente(TXT_B, 30)
+    ancho = sum(d.textlength(c, font=f) for c in titulo_pildora) + 4 * (len(titulo_pildora) - 1) + 110
+    x0 = (W - ancho) // 2
+    d.rounded_rectangle((x0, 222, x0 + ancho, 284), radius=18, fill=PILDORA)
+    texto_espaciado(d, W / 2, 233, titulo_pildora, f, FONDO)
+    return img, d
+
+
+def pie(d, texto):
+    d.text((M, H - 92), texto, font=fuente(TXT_SB, 28), fill=GRIS)
+
+
+def puntos(img, actual, total):
+    d = ImageDraw.Draw(img)
+    r, sep = 7, 26
+    x0 = W - M - (total - 1) * sep
+    for i in range(total):
+        cx = x0 + i * sep
+        d.ellipse((cx - r, H - 77 - r, cx + r, H - 77 + r), fill=CIAN if i == actual else BORDE)
+
+
+def etiqueta(d, xy, texto, color, tam=24):
+    f = fuente(TXT_B, tam)
+    x, y = xy
+    w = d.textlength(texto, font=f)
+    caja = (x, y, x + w + 36, y + tam + 22)
+    d.rounded_rectangle(caja, radius=(tam + 22) // 2, fill=TARJETA, outline=color, width=2)
+    d.text((x + 18, y + 9), texto, font=f, fill=color)
+    return caja[2], caja[3]
+
+
+def fila_etiquetas(d, y, etiquetas, tam=24):
+    """Etiquetas en linea; salta de linea si no caben. Devuelve la y final."""
+    x, fin_y = M, y
+    for texto, color in etiquetas:
+        if not texto:
+            continue
+        f = fuente(TXT_B, tam)
+        if x > M and x + d.textlength(texto, font=f) + 36 > W - M:
+            x, y = M, fin_y + 12
+        x2, fin_y = etiqueta(d, (x, y), texto, color, tam)
+        x = x2 + 12
+    return fin_y
+
+
+def tarjeta(d, caja, borde=BORDE, fondo=TARJETA, barra=None):
+    d.rounded_rectangle(caja, radius=24, fill=fondo, outline=borde, width=2)
+    if barra:
+        x0, y0, _, y1 = caja
+        d.rounded_rectangle((x0, y0 + 18, x0 + 7, y1 - 18), radius=3, fill=barra)
+
+
+def caja_texto(d, y, lineas, f, tam, color=TEXTO, titulo=None, barra=None, interlineado=1.4):
+    extra = 62 if titulo else 34
+    alto = len(lineas) * int(tam * interlineado) + extra + 34
+    tarjeta(d, (M, y, W - M, y + alto), barra=barra)
+    if titulo:
+        d.text((M + 36, y + 22), titulo, font=fuente(TXT_B, 22), fill=CIAN)
+    escribir(d, (M + 36, y + extra), lineas, f, tam, color, interlineado)
+    return y + alto
+
+
+def tarjeta_opcion(d, caja, letra, texto, estado="normal"):
+    x0, y0, x1, y1 = caja
+    fondo, borde, circ, txt, ltxt = TARJETA, BORDE, (36, 46, 90), TEXTO, BLANCO
+    if estado == "correcta":
+        fondo, borde, circ, txt, ltxt = (14, 52, 46), VERDE, VERDE, BLANCO, FONDO
+    elif estado == "incorrecta":
+        fondo, borde, circ, txt, ltxt = (14, 20, 48), (32, 40, 78), (30, 38, 74), (110, 118, 150), (110, 118, 150)
+    d.rounded_rectangle(caja, radius=20, fill=fondo, outline=borde, width=2)
+    r = 26
+    cx, cy = x0 + 26 + r, (y0 + y1) // 2
+    d.rounded_rectangle((cx - r, cy - r, cx + r, cy + r), radius=12, fill=circ)
+    d.text((cx, cy), letra, font=fuente(TXT_B, 28), fill=ltxt, anchor="mm")
+    tx = cx + r + 24
+    derecha = x1 - (80 if estado == "incorrecta" else 22)
+    f, lineas, tam = ajustar(d, texto, TXT_SB if estado == "correcta" else TXT,
+                             derecha - tx, y1 - y0 - 22, 32, 19, 1.22)
+    alto = len(lineas) * int(tam * 1.22)
+    escribir(d, (tx, cy - alto // 2 - 3), lineas, f, tam, txt, 1.22)
+    if estado == "incorrecta":
+        ax = x1 - 46
+        d.line((ax - 14, cy - 14, ax + 14, cy + 14), fill=ROJO, width=6)
+        d.line((ax - 14, cy + 14, ax + 14, cy - 14), fill=ROJO, width=6)
+
+
+def pildora(p):
+    return {"test": "TEST DEL DÍA", "infraccion": "INFRACCIÓN DEL DÍA"}.get(p["tipo"], "SUPUESTO DEL DÍA")
+
+
+# ---------------------------------------------------------------- test y supuestos
+
+def slides_caso(p):
+    tam = 31
+    paginas = paginar(p["enunciado"], TXT, tam, W - 2 * M - 72, LIMITE - TOP - 160)
+    if len(paginas) > 2:
+        tam = 27
+        paginas = paginar(p["enunciado"], TXT, tam, W - 2 * M - 72, LIMITE - TOP - 160)[:2]
+    imgs = []
+    for i, lineas in enumerate(paginas):
+        img, d = lienzo(pildora(p))
+        y = fila_etiquetas(d, TOP, [(f"SUPUESTO REAL · {p['convocatoria'].upper()}", CIAN)]) + 22
+        caja_texto(d, y, lineas, fuente(TXT, tam), tam,
+                   titulo="EL CASO" if i == 0 else "EL CASO (SIGUE)", barra=CIAN)
+        pie(d, "Lee el caso y desliza  →" if i == len(paginas) - 1 else "Sigue leyendo  →")
+        imgs.append(img)
+    return imgs
+
+
+def slide_pregunta(p):
+    img, d = lienzo(pildora(p))
+    etiqueta_conv = ("EXAMEN " if p["tipo"] == "test" else "SUPUESTO ") + p["convocatoria"].upper()
+    y = fila_etiquetas(d, TOP, [(etiqueta_conv, CIAN), (p["norma_corta"], MORADO)]) + 24
+    opciones = [(l, t) for l, t in zip("ABCD", p["opciones"]) if t]
+    alto_preg = 250 if sum(len(t) for _, t in opciones) < 400 else 190
+    f, lineas, tam = ajustar(d, p["pregunta"], TIT, W - 2 * M, alto_preg, 50, 32, 1.2)
+    y = escribir(d, (M, y), lineas, f, tam, BLANCO, 1.2) + 24
+    hueco = 18
+    alto = min(150, (LIMITE + 10 - y - hueco * (len(opciones) - 1)) // len(opciones))
+    for letra, texto in opciones:
+        tarjeta_opcion(d, (M, y, W - M, y + alto), letra, texto)
+        y += alto + hueco
+    pie(d, "Comenta tu respuesta  ·  Desliza para la solución  →")
+    return img
+
+
+def slide_solucion(p):
+    img, d = lienzo(pildora(p))
+    d.text((M, TOP - 8), "SOLUCIÓN", font=fuente(TIT, 64), fill=VERDE)
+    y = TOP + 85
+    idx = "ABCD".index(p["correcta"])
+    tarjeta_opcion(d, (M, y, W - M, y + 150), p["correcta"], p["opciones"][idx], "correcta")
+    y += 172
+    if p["articulo"] or p["norma_corta"]:
+        txt = " · ".join(x for x in (p["articulo"], p["norma_corta"]) if x)
+        y = fila_etiquetas(d, y, [(acortar(txt, 55), MORADO)]) + 20
+    hay_literal = bool(p["literal"])
+    texto = sin_mayusculas(acortar(p["justificacion"], 360 if hay_literal else 650))
+    f, lineas, tam = ajustar(d, texto, TXT, W - 2 * M, 270 if hay_literal else LIMITE - y, 33, 22, 1.38)
+    y = escribir(d, (M, y), lineas, f, tam, TEXTO, 1.38) + 24
+    if hay_literal and LIMITE - y > 190:
+        literal = acortar(frase_relevante(p["literal"], p["opciones"][idx]), 330)
+        fl, ll, tl = ajustar(d, "«" + literal + "»", TXT_I, W - 2 * M - 72, LIMITE - y - 100, 30, 20, 1.35)
+        caja_texto(d, y, ll, fl, tl, GRIS, titulo="LO QUE DICE LA LEY", interlineado=1.35)
+    pie(d, "¿Acertaste? Guárdalo para repasar")
+    return img
+
+
+def slide_trampa(p):
+    img, d = lienzo(pildora(p))
+    d.text((M, TOP - 8), "LA TRAMPA", font=fuente(TIT, 64), fill=ROJO)
+    d.text((M, TOP + 75), "Por qué fallan las demás opciones", font=fuente(TXT_SB, 30), fill=GRIS)
+    y = TOP + 135
+    malas = [(l, t) for l, t in zip("ABCD", p["opciones"]) if t and l != p["correcta"]]
+    alto_op = 108 if len(malas) == 3 else 130
+    for l, t in malas:
+        tarjeta_opcion(d, (M, y, W - M, y + alto_op), l, t, "incorrecta")
+        y += alto_op + 14
+    y += 16
+    texto = sin_mayusculas(acortar(p["justificacion_incorrecta"], 420))
+    f, lineas, tam = ajustar(d, texto, TXT, W - 2 * M - 72, LIMITE - y - 80, 32, 21, 1.4)
+    caja_texto(d, y, lineas, f, tam, barra=ROJO)
+    pie(d, "Así es como lo preguntan en el examen")
+    return img
+
+
+def slide_pregunta_abierta(p):
+    img, d = lienzo(pildora(p))
+    y = fila_etiquetas(d, TOP, [(f"SUPUESTO REAL · {p['convocatoria'].upper()}", CIAN),
+                               ("PREGUNTA A DESARROLLAR", MORADO)]) + 34
+    f, lineas, tam = ajustar(d, p["pregunta"], TIT, W - 2 * M, 470, 62, 34, 1.2)
+    y = escribir(d, (M, y), lineas, f, tam, BLANCO, 1.2) + 40
+    d.line((M, y, M + 260, y), fill=CIAN, width=5)
+    y += 40
+    texto = ("¿Cómo lo resolverías en el examen?\n"
+             "Escribe los puntos clave en comentarios y desliza para ver la solución.")
+    f2, l2, t2 = ajustar(d, texto, TXT, W - 2 * M, LIMITE - y, 34, 24, 1.4)
+    escribir(d, (M, y), l2, f2, t2, GRIS, 1.4)
+    pie(d, "Desliza para la solución  →")
+    return img
+
+
+def slides_respuesta(p):
+    texto = formatear_respuesta(sin_mayusculas(p["justificacion"]))
+    tam = 31
+    alto = LIMITE - TOP - 190
+    paginas = paginar(texto, TXT, tam, W - 2 * M - 72, alto)
+    if len(paginas) > 2:
+        tam = 27
+        paginas = paginar(texto, TXT, tam, W - 2 * M - 72, alto)
+    imgs = []
+    total = min(len(paginas), 3)
+    for i, lineas in enumerate(paginas[:3]):
+        img, d = lienzo(pildora(p))
+        d.text((M, TOP - 8), "SOLUCIÓN", font=fuente(TIT, 64), fill=VERDE)
+        y = TOP + 88
+        if p["norma"]:
+            y = fila_etiquetas(d, y, [(acortar(p["norma_corta"] or p["norma"], 60), MORADO)]) + 20
+        caja_texto(d, y, lineas, fuente(TXT, tam), tam, barra=VERDE)
+        pie(d, "Guárdalo para repasar" if i == total - 1 else "Sigue  →")
+        imgs.append(img)
+    return imgs
+
+
+# ---------------------------------------------------------------- infracciones
+
+def slide_infraccion(i):
+    img, d = lienzo("INFRACCIÓN DEL DÍA")
+    texto = sin_mayusculas(i["texto"])
+    f, lineas, tam = ajustar(d, texto, TXT_SB, W - 2 * M - 80, 430, 48, 28, 1.32)
+    alto = len(lineas) * int(tam * 1.32) + 80
+    bloque = 60 + alto + 50 + 90 + 72  # etiquetas + tarjeta + pregunta + botones
+    y = TOP + max(0, (LIMITE - TOP - bloque) // 2)
+    y = fila_etiquetas(d, y, [(i["materia"].upper(), CIAN), (i["norma_corta"], MORADO)]) + 26
+    tarjeta(d, (M, y, W - M, y + alto), barra=CIAN)
+    escribir(d, (M + 42, y + 40), lineas, f, tam, BLANCO, 1.32)
+    y += alto + 50
+    d.text((W // 2, y), "¿Qué tipo de infracción es?", font=fuente(TIT, 46), fill=BLANCO, anchor="mt")
+    y += 90
+    opciones = [("LEVE", VERDE), ("GRAVE", NARANJA), ("MUY GRAVE", ROJO)]
+    fo = fuente(TXT_B, 30)
+    anchos = [d.textlength(t, font=fo) + 70 for t, _ in opciones]
+    x = (W - sum(anchos) - 24 * 2) / 2
+    for (t, c), a in zip(opciones, anchos):
+        d.rounded_rectangle((x, y, x + a, y + 72), radius=36, fill=TARJETA, outline=c, width=3)
+        d.text((x + a / 2, y + 36), t, font=fo, fill=c, anchor="mm")
+        x += a + 24
+    pie(d, "Comenta tu respuesta  ·  Desliza para la solución  →")
+    return img
+
+
+def slide_infraccion_solucion(i):
+    img, d = lienzo("INFRACCIÓN DEL DÍA")
+    color = GRAVEDAD.get(i["gravedad"].lower(), CIAN)
+    d.text((M, TOP - 8), "SOLUCIÓN", font=fuente(TIT, 64), fill=BLANCO)
+    f = fuente(TXT_B, 44)
+    t = i["gravedad"].upper()
+    w = d.textlength(t, font=f)
+    d.rounded_rectangle((M, TOP + 90, M + w + 70, TOP + 170), radius=40, fill=color)
+    d.text((M + 35, TOP + 130), t, font=f, fill=FONDO, anchor="lm")
+    y = TOP + 205
+
+    filas = [("PRECEPTO", " · ".join(x for x in (i["referencia"], i["norma_media"]) if x)),
+             ("CUANTÍA", cuantia_legible(i["cuantia"])),
+             ("PUNTOS", f"{i['puntos']} puntos" if i["puntos"] else ""),
+             ("RESPONSABLE", i["responsable"]),
+             ("ÓRGANO COMPETENTE", i["organo"])]
+    filas = [(k, v) for k, v in filas if v]
+    fe, fv = fuente(TXT_B, 21), fuente(TXT_SB, 29)
+    bloques = [(k, envolver(d, v, fv, W - 2 * M - 72)[:3]) for k, v in filas]
+    alto = sum(30 + len(ls) * 38 + 18 for _, ls in bloques) + 34
+    tarjeta(d, (M, y, W - M, y + alto), barra=color)
+    yy = y + 26
+    for k, ls in bloques:
+        d.text((M + 36, yy), k, font=fe, fill=CIAN)
+        yy = escribir(d, (M + 36, yy + 30), ls, fv, 29, BLANCO, 1.3) + 18
+    y += alto + 22
+
+    if i["comentario"] and LIMITE - y > 150:
+        fl, ll, tl = ajustar(d, sin_mayusculas(i["comentario"]), TXT, W - 2 * M - 72, LIMITE - y - 90, 28, 20, 1.38)
+        caja_texto(d, y, ll, fl, tl, TEXTO, titulo="A TENER EN CUENTA", interlineado=1.38)
+    elif LIMITE - y > 80 and i["norma"]:
+        fn, ln, tn = ajustar(d, i["norma"], TXT_I, W - 2 * M, LIMITE - y, 24, 18, 1.35)
+        escribir(d, (M, y), ln, fn, tn, GRIS, 1.35)
+    pie(d, "Guárdalo para tu próximo servicio")
+    return img
+
+
+# ---------------------------------------------------------------- llamada a la app
+
+def slide_cta(p):
+    img, d = lienzo(pildora(p))
+    if p["tipo"] == "test":
+        lineas = [("ESTA CAYÓ EN", BLANCO), (p["convocatoria"].upper() + ".", CIAN),
+                  ("¿CUÁNTAS MÁS", BLANCO), ("ACERTARÍAS?", BLANCO)]
+        sub = "Más de 15.000 preguntas oficiales de Policía Local en Andalucía, corregidas y justificadas."
+        boton = "ACCEDE A MÁS TEST EN LA APP"
+    elif p["tipo"] == "infraccion":
+        lineas = [("TODO EL", BLANCO), ("CODIFICADO", CIAN), ("EN TU", BLANCO), ("BOLSILLO.", BLANCO)]
+        sub = "Tráfico, seguridad ciudadana, animales, ocio, comercio... Infracciones, cuantías y órganos competentes."
+        boton = "ACCEDE AL CODIFICADO EN LA APP"
+    else:
+        lineas = [("ESTE SUPUESTO", BLANCO), ("CAYÓ EN", BLANCO), (p["convocatoria"].upper() + ".", CIAN),
+                  ("¿LO TENÍAS?", BLANCO)]
+        sub = "Supuestos prácticos reales de Policía Local, resueltos paso a paso y con la norma aplicable."
+        boton = "ACCEDE A MÁS SUPUESTOS EN LA APP"
+    y = TOP + 10
+    for texto, color in lineas:
+        f, _, _ = ajustar(d, texto, TIT, W - 2 * M, 100, 88, 48, 1.0)
+        d.text((M, y), texto, font=f, fill=color)
+        y += 100
+    d.line((M, y + 22, M + 380, y + 22), fill=CIAN, width=5)
+    y += 64
+    f2, l2, t2 = ajustar(d, sub, TXT, W - 2 * M, 150, 36, 26, 1.35)
+    y = escribir(d, (M, y), l2, f2, t2, TEXTO, 1.35) + 46
+    fb = fuente(TXT_B, 32)
+    bw = sum(d.textlength(c, font=fb) for c in boton) + 3 * len(boton) + 90
+    bx = (W - bw) // 2
+    d.rounded_rectangle((bx, y, bx + bw, y + 96), radius=22, fill=CIAN)
+    texto_espaciado(d, W / 2, y + 28, boton, fb, FONDO, 3)
+    d.text((W // 2, y + 140), URL_APP, font=fuente(TXT_SB, 32), fill=BLANCO, anchor="mm")
+    pie(d, "Enlace en la bio")
+    return img
+
+
+# ---------------------------------------------------------------- montaje
+
+def construir(p):
+    if p["tipo"] == "infraccion":
+        imgs = [slide_infraccion(p), slide_infraccion_solucion(p)]
+    elif es_desarrollo(p):
+        imgs = slides_caso(p) if len(p["enunciado"]) >= MIN_CASO else []
+        imgs += [slide_pregunta_abierta(p), *slides_respuesta(p)]
+    else:
+        imgs = slides_caso(p) if p["tipo"] == "corta" and len(p["enunciado"]) >= MIN_CASO else []
+        imgs += [slide_pregunta(p), slide_solucion(p)]
+        if len(p["justificacion_incorrecta"]) >= 40:
+            imgs.append(slide_trampa(p))
+    imgs.append(slide_cta(p))
+    for n, img in enumerate(imgs):
+        puntos(img, n, len(imgs))
+    return imgs
+
+
+def generar(p, salida):
+    """Guarda las diapositivas como JPEG (Instagram solo admite JPEG) y devuelve las rutas."""
+    os.makedirs(salida, exist_ok=True)
+    rutas = []
+    for n, img in enumerate(construir(p), 1):
+        r = os.path.join(salida, f"{n:02d}.jpg")
+        img.save(r, "JPEG", quality=90, optimize=True, progressive=True)
+        rutas.append(r)
+    return rutas
+
+
+if __name__ == "__main__":
+    from datos import cargar
+
+    objetivo = sys.argv[1]
+    tipo = ("infraccion" if "CODIFICADO" in objetivo else
+            "corta" if "SUPUESTOS" in objetivo else "test")
+    p = next(x for x in cargar(tipo) if x["id"] == objetivo)
+    salida = os.path.join(RAIZ, "40. INSTAGRAM", "salida", "muestra_" + tipo)
+    for r in generar(p, salida):
+        print(r)

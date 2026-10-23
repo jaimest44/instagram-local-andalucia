@@ -25,7 +25,7 @@ W, H = 1080, 1350
 M = 70  # margen lateral
 TOP = 330  # donde empieza el contenido (debajo de la cabecera)
 LIMITE = H - 150  # por debajo va el pie
-MIN_CASO = 350  # mas corto suele ser solo la introduccion del supuesto
+MIN_CASO = 350  # mas corto: el caso va en la diapositiva de la pregunta (nunca se omite)
 
 # Paleta de la marca (logo y posts anteriores)
 FONDO = (8, 12, 40)
@@ -287,12 +287,25 @@ def slides_caso(p):
     return imgs
 
 
+def caso_en_linea(d, y, p, alto_max=380):
+    """Si el supuesto tiene un enunciado corto (no lleva diapositiva propia), lo dibuja en un
+    recuadro "EL CASO" encima de la pregunta. Sin el caso la pregunta no se entiende."""
+    if p["tipo"] != "corta" or len(p["enunciado"]) < 60 or len(p["enunciado"]) >= MIN_CASO:
+        return y
+    f, lineas, tam = ajustar(d, p["enunciado"], TXT, W - 2 * M - 80, alto_max - 90, 30, 22, 1.35)
+    return caja_texto(d, y, lineas, f, tam, TEXTO, titulo="EL CASO", barra=CIAN, interlineado=1.35) + 26
+
+
 def slide_pregunta(p):
     img, d = lienzo(pildora(p))
     etiqueta_conv = ("EXAMEN " if p["tipo"] == "test" else "SUPUESTO ") + p["convocatoria"].upper()
     y = fila_etiquetas(d, TOP, [(etiqueta_conv, CIAN), (p["norma_corta"], MORADO)]) + 24
+    y0 = y
+    y = caso_en_linea(d, y, p, alto_max=330)
     opciones = [(l, t) for l, t in zip("ABCD", p["opciones"]) if t]
     alto_preg = 250 if sum(len(t) for _, t in opciones) < 400 else 190
+    if y > y0:
+        alto_preg = 150
     f, lineas, tam = ajustar(d, p["pregunta"], TIT, W - 2 * M, alto_preg, 50, 32, 1.2)
     y = escribir(d, (M, y), lineas, f, tam, BLANCO, 1.2) + 24
     hueco = 18
@@ -348,7 +361,9 @@ def slide_pregunta_abierta(p):
     img, d = lienzo(pildora(p))
     y = fila_etiquetas(d, TOP, [(f"SUPUESTO REAL · {p['convocatoria'].upper()}", CIAN),
                                ("PREGUNTA A DESARROLLAR", MORADO)]) + 34
-    f, lineas, tam = ajustar(d, p["pregunta"], TIT, W - 2 * M, 470, 62, 34, 1.2)
+    y0 = y
+    y = caso_en_linea(d, y, p)
+    f, lineas, tam = ajustar(d, p["pregunta"], TIT, W - 2 * M, 470 if y == y0 else 300, 62, 30, 1.2)
     y = escribir(d, (M, y), lineas, f, tam, BLANCO, 1.2) + 40
     d.line((M, y, M + 260, y), fill=CIAN, width=5)
     y += 40

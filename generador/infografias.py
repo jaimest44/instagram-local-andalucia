@@ -67,7 +67,7 @@ def leer_ficha(ruta):
     consejo = None
     try:
         i = next(k for k, l in enumerate(lineas) if "TRAMPAS DE EXAMEN" in l.upper())
-        tit = re.sub(r"^[^\wÁÉÍÓÚÑ¿¡]+", "", lineas[i + 1]).strip()
+        tit = re.sub(r"^[^\wÁÉÍÓÚÑ¿¡«\"(]+", "", lineas[i + 1]).strip()  # quita el icono, no las comillas
         cuerpo = []
         for l in lineas[i + 2:]:
             if re.match(r"^[^\w\s(¿¡«\"'+\-–]", l):  # siguiente consejo (empieza por icono)

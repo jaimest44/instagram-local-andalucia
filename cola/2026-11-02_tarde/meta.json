@@ -1,13 +1,16 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion_s": 21,
  "fecha": "2026-11-02",
- "formato": "video_dibujos",
+ "formato": "anuncio",
  "franja": "tarde",
- "id": "dibujos-04-04_SP_velez_p2_carne.mp4",
- "imagenes": [],
- "reel": "video.mp4",
- "serie": "Supuesto práctico en dibujos",
- "tema": "dibujos"
+ "id": "anuncio-esquemas-visuales",
+ "imagenes": [
+  "01.jpg",
+  "02.jpg",
+  "03.jpg",
+  "04.jpg",
+  "05.jpg"
+ ],
+ "tema": "promo"
 }

@@ -51,11 +51,11 @@ def slides():
     # 1. portada: titular + abanico de fichas
     img, d = C.lienzo("NUEVO EN LA APP")
     y = C.TOP - 20
-    for texto, color in (("EL TEMARIO DE", C.BLANCO), ("POLICÍA LOCAL", C.CIAN), ("EN ESQUEMAS", C.BLANCO), ("VISUALES.", C.BLANCO)):
+    for texto, color in (("TODO EL TEMARIO", C.BLANCO), ("DE POLICÍA LOCAL", C.CIAN), ("EN ESQUEMAS", C.BLANCO), ("VISUALES.", C.BLANCO)):
         f, _, _ = C.ajustar(d, texto, C.TIT, W - 2 * M, 104, 100, 56, 1.0)
         d.text((M, y), texto, font=f, fill=color)
         y += 100
-    C.pegatina(img, "+150 fichas · más de 70 leyes", (M - 6, y + 8), angulo=-3, tam=38)
+    C.pegatina(img, "Los 45 temas · +170 fichas", (M - 6, y + 8), angulo=-3, tam=38)
     y += 120
     alto = C.LIMITE - y - 60
     for k, ang, x in (("cp", 7, 40), ("rgc", -6, 590), ("ce", 0, 300)):
@@ -109,11 +109,11 @@ def slides():
     img, d = C.lienzo("TODOS LOS BLOQUES")
     y = C.TOP - 20
     bloques = [
-        ("Constitución y Estatuto", "CE, Estatuto de Andalucía, TC, Poder Judicial, Defensor del Pueblo"),
+        ("Constitución y Estatuto", "CE, Estatuto de Andalucía, Unión Europea, TC, Poder Judicial"),
         ("Administración y función pública", "Leyes 39 y 40/2015, LBRL, LAULA, padrón, TREBEP"),
         ("Policía Local y seguridad", "Ley 6/2023, Decreto 8/2026, LO 2/1986, Seguridad Ciudadana, armas"),
         ("Penal y procesal", "Código Penal (34 fichas), LECrim, detención, menores, víctima"),
-        ("Tráfico y transporte", "Ley de Tráfico, Circulación, Conductores, Vehículos, LOTT, taxi y VTC"),
+        ("Tráfico y transporte", "Ley de Tráfico, Circulación, Conductores, Vehículos, LOTT, accidentes"),
         ("Policía administrativa", "Consumo, comercio, espectáculos, urbanismo, medio ambiente, animales"),
         ("Igualdad y violencia de género", "LO 1/2004, LO 3/2007, LO 10/2022, LGTBI, deontología"),
     ]
@@ -135,7 +135,7 @@ def slides():
         d.text((M, y), texto, font=f, fill=color)
         y += 96
     y += 24
-    items = ["Más de 150 fichas, ley a ley", "Cada parte de la ley en una hoja", "Cifras, plazos y multas clave",
+    items = ["Los 45 temas, +170 fichas", "Cada parte de la ley en una hoja", "Cifras, plazos y multas clave",
              "Consejos y trampas de examen"]
     alto = 84 + len(items) * 52
     d.rounded_rectangle((M, y, W - M, y + alto), radius=26, fill=(255, 255, 255))
@@ -158,9 +158,9 @@ def slides():
 
 def texto():
     return "\n\n".join([
-        "📚 Ya tienes el temario de Policía Local en esquemas visuales.",
-        "Más de 150 fichas de más de 70 leyes: Constitución, Estatuto, Código Penal, LECrim, Ley 6/2023, "
-        "tráfico, policía administrativa, igualdad… Cada ficha resume una parte de la ley en una hoja, "
+        "📚 Ya tienes todo el temario de Policía Local en esquemas visuales: los 45 temas.",
+        "Más de 170 fichas de más de 70 leyes: Constitución, Estatuto, Unión Europea, Código Penal, LECrim, "
+        "Ley 6/2023, tráfico y accidentes, policía administrativa, igualdad… Cada ficha resume una parte de la ley en una hoja, "
         "con las cifras, los plazos y las trampas que más caen en el examen.",
         f"Las tienes en {C.URL_APP} → {I.RUTA_APP} (enlace en la bio).",
         "📌 Guárdalo y compártelo con quien esté preparando la oposición.",

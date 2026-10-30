@@ -1,0 +1,8 @@
+name = "instagram-disparador"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# En UTC, cada media hora (minutos 2 y 32). El Worker solo dispara a las horas de HORAS
+# (hora de Madrid, en verano y en invierno) y descarta el resto (ver worker.js).
+[triggers]
+crons = ["2,32 * * * *"]

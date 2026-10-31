@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .env
 .syncmetadata
+generador/infracciones_de_calle.md

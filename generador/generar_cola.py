@@ -20,6 +20,7 @@ from caption import caption
 from carrusel import generar
 from reel import generar_reel
 from datos import cargar, es_desarrollo, problemas
+import plan_voz
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(AQUI, ".."))
@@ -120,13 +121,19 @@ def main():
     en_cola = set(ya_en_cola)
     huecos = []  # (dia, sufijo de carpeta, franja) que faltan por generar
     dia = hoy + dt.timedelta(days=1)
+    inicio_voz = plan_voz.inicio()
     while dia <= fin:
         for sufijo, franja in FRANJAS:
+            if inicio_voz and dia >= inicio_voz:
+                break  # desde el plan con voz, estas franjas las rellena plan_voz.py
             if dia.isoformat() + sufijo not in en_cola:
                 huecos.append((dia, sufijo, franja))
         dia += dt.timedelta(days=1)
+    nuevas_voz = plan_voz.programar(min(fin, dt.date.today() + dt.timedelta(days=plan_voz.DIAS_COLA)))
     if not huecos:
-        print(f"La cola ya está completa hasta {fin}. Nada que hacer.")
+        print(f"La cola ya está completa hasta {fin}.")
+        if a.subir and nuevas_voz:
+            subir(nuevas_voz, fin)
         return
 
     disponibles = defaultdict(list)
@@ -185,13 +192,17 @@ def main():
           f"{len(disponibles['infraccion'])} infracciones "
           f"({descartadas} descartadas por el filtro de calidad).")
 
-    if a.subir and nuevas:
-        def git(*args):
-            subprocess.run(["git", *args], cwd=REPO, check=True)
-        git("pull", "--rebase", "--autostash")
-        git("add", "cola", "estado/usadas.json")
-        git("commit", "-m", f"Cola: {nuevas} publicaciones hasta {fin}")
-        git("push")
+    if a.subir and (nuevas or nuevas_voz):
+        subir(nuevas + nuevas_voz, fin)
+
+
+def subir(nuevas, fin):
+    def git(*args):
+        subprocess.run(["git", *args], cwd=REPO, check=True)
+    git("pull", "--rebase", "--autostash")
+    git("add", "cola", "estado")
+    git("commit", "-m", f"Cola: {nuevas} publicaciones hasta {fin}")
+    git("push")
 
 
 if __name__ == "__main__":

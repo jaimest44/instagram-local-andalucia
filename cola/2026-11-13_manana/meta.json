@@ -1,13 +1,12 @@
 {
  "caso": "",
  "convocatoria": "",
+ "duracion": 41.8,
  "fecha": "2026-11-13",
- "ficha": "LBRL_01_Municipio_y_Organizacion.pdf",
- "formato": "infografia_reel",
+ "formato": "voz_chuleta",
  "franja": "manana",
- "id": "infografia-LBRL_Ley_7-1985_Regimen_Local-LBRL_01_Municipio_y_Organizacion.pdf",
+ "id": "ficha:Decreto_8-2026_Ingreso_Policia_Local/D8-2026_01_Normas_Comunes.pdf",
  "imagenes": [],
- "ley": "Ley de Bases del Régimen Local",
  "reel": "reel.mp4",
- "tema": "infografia"
+ "tema": "el Decreto 8/2026 de ingreso"
 }

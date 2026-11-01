@@ -1,15 +1,12 @@
 {
- "caso": "20. RECURSOS IA/CODIFICADO/LEY_2-2026_GESTION_AMBIENTAL_CODIFICADO.xlsx|d41d8cd9",
+ "caso": "",
  "convocatoria": "",
+ "duracion": 39.9,
  "fecha": "2026-11-06",
- "formato": "infraccion",
+ "formato": "voz_infraccion",
  "franja": "mediodia",
- "id": "20. RECURSOS IA/CODIFICADO/LEY_2-2026_GESTION_AMBIENTAL_CODIFICADO.xlsx#68",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg"
- ],
+ "id": "calle:Real Decreto 1428/2003|118.1|No hacer uso el pasajero del vehículo, o",
+ "imagenes": [],
  "reel": "reel.mp4",
- "tema": "Medioambiente"
+ "tema": "Móvil, cinturón, casco y sillita"
 }

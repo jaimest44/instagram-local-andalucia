@@ -161,15 +161,16 @@ def supuestos_con_gancho(ganchos):
 def caption(tipo, cosa, gancho):
     if tipo == "infraccion":
         cuerpo = [f"🚓 {gancho}", "¿Leve, grave o muy grave? ¿Cuánto es la multa y quién te sanciona? La respuesta, en el vídeo 👀",
-                  f"Más de 2.400 infracciones del codificado, con su multa y quién sanciona, en {R.C.URL_APP} (enlace en la bio)."]
+                  f"Más de 2.400 infracciones del codificado, con su multa y quién sanciona. Regístrate gratis en {R.C.URL_APP} (enlace en la bio)."]
     elif tipo == "chuleta":
-        cuerpo = [f"🧠 {gancho}", f"La ficha completa y las de los 45 temas del temario, en {R.C.URL_APP} → "
+        cuerpo = [f"🧠 {gancho}", f"La ficha completa y las de los 45 temas del temario: regístrate gratis en {R.C.URL_APP} → "
                   "Recursos → Supuestos → Esquemas visuales (enlace en la bio)."]
     else:
         conv = cosa.get("convocatoria", "")
         cuerpo = [f"🚨 {gancho}", f"Supuesto real de examen{' (' + conv + ')' if conv else ''}. ¿Lo habrías resuelto? "
                   "Pausa el vídeo antes de la solución.",
-                  f"Más de 1.400 supuestos de examen resueltos paso a paso en {R.C.URL_APP} (enlace en la bio)."]
+                  f"Más de 1.400 supuestos de examen resueltos paso a paso. Regístrate gratis en {R.C.URL_APP} (enlace en la bio).",
+                  "🔒 Hasta el 31/12: Plan Completo a 9,99 €/mes, congelado mientras sigas suscrito."]
     return "\n\n".join(cuerpo + ["📌 Envíaselo a tu compañero de opos.", HASHTAGS])
 
 

@@ -1,15 +1,12 @@
 {
- "caso": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 - La Rambla SP.xlsx|989dcb1c",
+ "caso": "",
  "convocatoria": "La Rambla 2021",
+ "duracion": 134.8,
  "fecha": "2026-11-09",
- "formato": "desarrollo",
+ "formato": "voz_supuesto",
+ "franja": "noche",
  "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 - La Rambla SP.xlsx#7",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg",
-  "04.jpg",
-  "05.jpg"
- ],
+ "imagenes": [],
+ "reel": "reel.mp4",
  "tema": "DELITOS"
 }

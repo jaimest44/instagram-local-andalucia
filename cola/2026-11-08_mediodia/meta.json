@@ -1,15 +1,12 @@
 {
- "caso": "20. RECURSOS IA/CODIFICADO/SEGURIDAD_AEREA - CODIFICADO.xlsx|d41d8cd9",
+ "caso": "",
  "convocatoria": "",
+ "duracion": 43.3,
  "fecha": "2026-11-08",
- "formato": "infraccion",
+ "formato": "voz_infraccion",
  "franja": "mediodia",
- "id": "20. RECURSOS IA/CODIFICADO/SEGURIDAD_AEREA - CODIFICADO.xlsx#15",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg"
- ],
+ "id": "calle:Real Decreto 1428/2003|118.1|No hacer uso el conductor del vehículo, ",
+ "imagenes": [],
  "reel": "reel.mp4",
- "tema": "Drones"
+ "tema": "Móvil, cinturón, casco y sillita"
 }

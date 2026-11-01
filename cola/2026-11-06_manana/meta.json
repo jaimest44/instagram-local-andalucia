@@ -1,13 +1,12 @@
 {
  "caso": "",
  "convocatoria": "",
+ "duracion": 45.4,
  "fecha": "2026-11-06",
- "ficha": "L39-2015_02_Plazos_Actos_Notificacion.pdf",
- "formato": "infografia_reel",
+ "formato": "voz_chuleta",
  "franja": "manana",
- "id": "infografia-Ley_39-2015_Procedimiento_Administrativo-L39-2015_02_Plazos_Actos_Notificacion.pdf",
+ "id": "ficha:RGCir_RD_1428-2003_Reglamento_General_Circulacion/RGCir_01_Normas_Generales_y_Carga.pdf",
  "imagenes": [],
- "ley": "Ley 39/2015",
  "reel": "reel.mp4",
- "tema": "infografia"
+ "tema": "el Reglamento General de Circulación"
 }

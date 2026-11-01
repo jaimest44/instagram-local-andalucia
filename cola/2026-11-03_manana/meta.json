@@ -1,17 +1,12 @@
 {
  "caso": "",
  "convocatoria": "",
+ "duracion": 43.1,
  "fecha": "2026-11-03",
- "ficha": "CP_L2_09_Hurto_Robo_Usurpacion.pdf",
- "formato": "infografia_carrusel",
+ "formato": "voz_chuleta",
  "franja": "manana",
- "id": "infografia-Codigo_Penal-CP_L2_09_Hurto_Robo_Usurpacion.pdf",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg",
-  "04.jpg"
- ],
- "ley": "Código Penal",
- "tema": "infografia"
+ "id": "ficha:Constitucion/CE_01_Titulo_Preliminar.pdf",
+ "imagenes": [],
+ "reel": "reel.mp4",
+ "tema": "la Constitución"
 }

@@ -1,14 +1,12 @@
 {
- "caso": "10. TEST/20. SOLUCIÓN EXCEL/BBDD CORREGIDA/2019 - Algeciras.xlsx|d41d8cd9",
- "convocatoria": "Algeciras 2019",
+ "caso": "",
+ "convocatoria": "Tomares 2021",
+ "duracion": 127.0,
  "fecha": "2026-11-11",
- "formato": "test",
- "id": "10. TEST/20. SOLUCIÓN EXCEL/BBDD CORREGIDA/2019 - Algeciras.xlsx#7",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg",
-  "04.jpg"
- ],
- "tema": "TEMA 40. Transportes: clases de transportes. Transporte de viajeros, de mercancías y mixto. El servicio privado. Transporte escolar y de menores: características y requisitos. Transporte de mercancías peligrosas por carretera."
+ "formato": "voz_supuesto",
+ "franja": "noche",
+ "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 Tomares SP.xlsx#2",
+ "imagenes": [],
+ "reel": "reel.mp4",
+ "tema": "COMERCIO AMBULANTE"
 }

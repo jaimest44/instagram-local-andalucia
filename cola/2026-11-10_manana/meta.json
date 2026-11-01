@@ -1,17 +1,12 @@
 {
  "caso": "",
  "convocatoria": "",
+ "duracion": 45.2,
  "fecha": "2026-11-10",
- "ficha": "RGCir_03_Velocidad_y_Prioridad.pdf",
- "formato": "infografia_carrusel",
+ "formato": "voz_chuleta",
  "franja": "manana",
- "id": "infografia-RGCir_RD_1428-2003_Reglamento_General_Circulacion-RGCir_03_Velocidad_y_Prioridad.pdf",
- "imagenes": [
-  "01.jpg",
-  "02.jpg",
-  "03.jpg",
-  "04.jpg"
- ],
- "ley": "Reglamento General de Circulación",
- "tema": "infografia"
+ "id": "ficha:LO_2-1986_Fuerzas_y_Cuerpos_de_Seguridad/LO2-1986_01_Principios_Basicos.pdf",
+ "imagenes": [],
+ "reel": "reel.mp4",
+ "tema": "la LO 2/1986 de Fuerzas y Cuerpos de Seguridad"
 }

@@ -131,7 +131,7 @@ CASOS = [
         "precepto": "Art. 118.3 RGC (opc. 5D)", "multa": "200 € (100 € con pronto pago)", "puntos": "",
         "responsable": "Conductor", "organo": "Alcalde (vía urbana)",
         "ojo": ["De noche, sin luz ni elemento reflectante, también es grave (opc. 5E).",
-                "Circular con un VMP por autopista o autovía es grave (art. 20.1 LSV).",
+                "Circular con un VMP por autopista o autovía es grave (art. 38.1 RGC).",
                 "El VMP necesita su certificado de circulación (art. 22 RGVeh)."],
     },
 ]

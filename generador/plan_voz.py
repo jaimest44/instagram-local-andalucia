@@ -86,7 +86,7 @@ def infracciones_calle():
         out.append({"n": len(out), "escena": escena, "gravedad": m[1], "norma": m[2], "hecho": m[4].strip(),
                     "cuantia": multa_legible(m[5].strip()), "puntos": m[6] or "", "organo": quien,
                     "organo_voz": voz[:200], "norma_media": NORMAS.get(m[2], m[2]), "referencia": f"art. {art}",
-                    "id": f"calle:{m[2]}|{art}|{m[4][:40]}"})
+                    "id": f"calle:{m[2]}|{art}|{m[4][:40]}", "clave": f"{m[2]}|{m[3]}"})
     return out
 
 
@@ -201,8 +201,8 @@ def programar(hasta=None):
     hasta = hasta or hoy + dt.timedelta(days=DIAS_COLA)
     dia = max(ini, hoy + dt.timedelta(days=1))
 
-    ganchos_inf = {g["n"]: g["gancho"] for g in ganchos.get("infracciones", [])}
-    infr = [i for i in infracciones_calle() if i["n"] in ganchos_inf and i["id"] not in usados]
+    ganchos_inf = {g["clave"]: g["gancho"] for g in ganchos.get("infracciones", [])}  # norma|articulo: la lista se regenera
+    infr = [i for i in infracciones_calle() if i["clave"] in ganchos_inf and i["id"] not in usados]
     sups = [(p, g) for p, g in supuestos_con_gancho(ganchos) if p["id"] not in usados]
     # lo que ya salio con el formato antiguo antes del plan nuevo no se repite
     antes = {k for k, v in leer_json(os.path.join(REPO, "estado", "infografias_usadas.json"), {}).items() if v[:10] < ini.isoformat()}
@@ -224,7 +224,7 @@ def programar(hasta=None):
                 i = next((x for x in infr if x["escena"] != ultima_escena), infr[0])
                 infr.remove(i)
                 ultima_escena = i["escena"]
-                cosa, gancho, ident, tema = i, ganchos_inf[i["n"]], i["id"], i["escena"]
+                cosa, gancho, ident, tema = i, ganchos_inf[i["clave"]], i["id"], i["escena"]
             elif tipo == "chuleta":
                 if not fichas:
                     print(f"{clave}: no quedan fichas.")

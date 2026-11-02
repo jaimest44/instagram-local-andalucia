@@ -340,7 +340,11 @@
   },
   {
    "clave": "Real Decreto Legislativo 6/2015|13.6.5D",
-   "gancho": "Haces gestos con la mano a los coches que vienen para avisarles de que hay un radar."
+   "gancho": "Vas conduciendo y les haces gestos con la mano a los coches que vienen para avisarles del radar."
+  },
+  {
+   "clave": "Real Decreto 1428/2003|100.2.5B",
+   "gancho": "Haces ráfagas de luces para avisar a los coches que vienen de que hay un radar."
   }
  ]
 }

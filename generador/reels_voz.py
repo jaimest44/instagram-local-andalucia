@@ -254,10 +254,10 @@ def reel_infraccion(inf, gancho, destino):
     esc.append(Escena(img, voz, pausa=0.8))
 
     img, d = base("CODIFICADO DE INFRACCIONES")
-    y = texto_grande(d, 460, "MÁS DE 2.400 INFRACCIONES CON SU MULTA Y QUIÉN SANCIONA.", C.BLANCO, alto=640, maximo=130)
+    y = texto_grande(d, 460, "MÁS DE 2.100 INFRACCIONES CON SU MULTA Y QUIÉN SANCIONA, EN EL PLAN COMPLETO.", C.BLANCO, alto=640, maximo=130)
     y = boton_app(d, y + 80)
     pie(d, "Envíaselo a tu compañero de opos")
-    esc.append(Escena(img, "Tienes más de dos mil cuatrocientas infracciones, con su multa y quién sanciona, en la app. "
+    esc.append(Escena(img, "Más de dos mil cien infracciones, con su multa y quién sanciona, en el Plan Completo. Regístrate gratis y haz tu primer test en cinco minutos. "
                            "Envíaselo a tu compañero de opos.", pausa=1.2))
     return montar(esc, destino, destino + "_trabajo")
 
@@ -323,10 +323,10 @@ def reel_chuleta(carpeta_ley, pdf, ley, destino):
     img.paste(trozo, (40, 300))
     d = ImageDraw.Draw(img)
     I.candado(d, W // 2, 650, r=80)
-    y = texto_grande(d, 1040, "LA FICHA COMPLETA Y LOS 45 TEMAS, EN LA APP", C.BLANCO, alto=250, maximo=86)
+    y = texto_grande(d, 1040, "LA FICHA COMPLETA Y LOS 45 TEMAS, EN EL PLAN COMPLETO", C.BLANCO, alto=250, maximo=86)
     boton_app(d, y + 40)
-    pie(d, "Recursos > Supuestos > Esquemas visuales")
-    esc.append(Escena(img, "La ficha completa, y las de los cuarenta y cinco temas, están en la app. Guárdalo para repasar.", pausa=1.2))
+    pie(d, "Regístrate y mira gratis una ficha de prueba")
+    esc.append(Escena(img, "La ficha completa, y las de los cuarenta y cinco temas, están en el Plan Completo. Regístrate gratis y mira una ficha de prueba. Guárdalo para repasar.", pausa=1.2))
     return montar(esc, destino, destino + "_trabajo")
 
 
@@ -384,10 +384,10 @@ def reel_supuesto(p, destino, gancho=None):
         esc.append(Escena(img, ("La solución. " if i == 0 else "") + b, pausa=0.4))
 
     img, d = base("SUPUESTOS RESUELTOS")
-    y = texto_grande(d, 460, "MÁS DE 1.400 SUPUESTOS DE EXAMEN RESUELTOS PASO A PASO.", C.BLANCO, alto=640, maximo=130)
+    y = texto_grande(d, 460, "MÁS DE 6.000 PREGUNTAS DE SUPUESTOS, MÁS DE 1.400 DE EXÁMENES OFICIALES.", C.BLANCO, alto=640, maximo=130)
     y = boton_app(d, y + 80)
     pie(d, "Envíaselo a tu compañero de opos")
-    esc.append(Escena(img, "Tienes más de mil cuatrocientos supuestos de examen resueltos en la app. "
+    esc.append(Escena(img, "Más de seis mil preguntas de supuestos, más de mil cuatrocientas de exámenes oficiales. Regístrate gratis y haz tu primer test en cinco minutos. "
                            "Envíaselo a tu compañero de opos.", pausa=1.2))
     return montar(esc, destino, destino + "_trabajo")
 

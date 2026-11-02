@@ -161,15 +161,15 @@ def supuestos_con_gancho(ganchos):
 def caption(tipo, cosa, gancho):
     if tipo == "infraccion":
         cuerpo = [f"🚓 {gancho}", "¿Leve, grave o muy grave? ¿Cuánto es la multa y quién te sanciona? La respuesta, en el vídeo 👀",
-                  f"Más de 2.400 infracciones del codificado, con su multa y quién sanciona. Regístrate gratis en {R.C.URL_APP} (enlace en la bio)."]
+                  f"Más de 2.100 infracciones del codificado, con su multa y quién sanciona, en el Plan Completo. Regístrate gratis en {R.C.URL_APP} y haz tu primer test en 5 minutos (enlace en la bio)."]
     elif tipo == "chuleta":
-        cuerpo = [f"🧠 {gancho}", f"La ficha completa y las de los 45 temas del temario: regístrate gratis en {R.C.URL_APP} → "
-                  "Recursos → Supuestos → Esquemas visuales (enlace en la bio)."]
+        cuerpo = [f"🧠 {gancho}", "La ficha completa y las de los 45 temas están en el Plan Completo. "
+                  f"Regístrate gratis en {R.C.URL_APP} y mira una ficha de prueba (enlace en la bio)."]
     else:
         conv = cosa.get("convocatoria", "")
         cuerpo = [f"🚨 {gancho}", f"Supuesto real de examen{' (' + conv + ')' if conv else ''}. ¿Lo habrías resuelto? "
                   "Pausa el vídeo antes de la solución.",
-                  f"Más de 1.400 supuestos de examen resueltos paso a paso. Regístrate gratis en {R.C.URL_APP} (enlace en la bio).",
+                  f"Más de 6.000 preguntas de supuestos, más de 1.400 de exámenes oficiales. Regístrate gratis en {R.C.URL_APP} y haz tu primer test en 5 minutos (enlace en la bio).",
                   "🔒 Hasta el 31/12: Plan Completo a 9,99 €/mes, congelado mientras sigas suscrito."]
     return "\n\n".join(cuerpo + ["📌 Envíaselo a tu compañero de opos.", HASHTAGS])
 
@@ -280,8 +280,43 @@ def fijar_inicio(fecha):
     print(f"Plan con voz desde {ini}: {quitadas} publicaciones antiguas quitadas de la cola.")
 
 
+def regenerar(solo=None):
+    """Rehace video y texto de los reels con voz aun sin publicar (mismos contenidos y fechas) al cambiar las llamadas."""
+    publicadas = leer_json(os.path.join(REPO, "estado", "publicadas.json"), {})
+    ganchos = leer_json(GANCHOS, {})
+    g_inf = {g["clave"]: g["gancho"] for g in ganchos["infracciones"]}
+    g_sup = {g["id"]: g["gancho"] for g in ganchos["supuestos"]}
+    infr = {i["id"]: i for i in infracciones_calle()}
+    sups = {p["id"]: p for p in datos.cargar("corta")}
+    fichas = {f"ficha:{c}/{pdf}": (c, pdf, ley) for c, pdf, ley in chuletas()}
+    for d in sorted(os.listdir(COLA)):
+        ruta = os.path.join(COLA, d, "meta.json")
+        meta = leer_json(ruta, {})
+        if not str(meta.get("formato", "")).startswith("voz_") or d in publicadas:
+            continue
+        tipo = meta["formato"][4:]
+        if solo and tipo != solo:
+            continue
+        if tipo == "infraccion":
+            cosa = infr[meta["id"]]
+            gancho = g_inf[cosa["clave"]]
+        elif tipo == "supuesto":
+            cosa, gancho = sups[meta["id"]], g_sup[meta["id"]]
+        else:
+            cosa = fichas[meta["id"]]
+            trampas = R.consejos_ficha(os.path.join(I.FICHAS, cosa[0], cosa[1]))
+            gancho = R.de(f"{min(3, len(trampas))} trampas de {cosa[2]} que caen en el examen.")
+        meta["duracion"] = round(generar(tipo, cosa, gancho, os.path.join(COLA, d)), 1)
+        with open(os.path.join(COLA, d, "caption.txt"), "w", encoding="utf-8") as f:
+            f.write(caption(tipo, cosa, gancho))
+        guardar_json(ruta, meta)
+        print(f"{d:<22} {tipo:<10} {meta['duracion']:5.0f} s")
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "inicio":
+    if sys.argv[1] == "regenerar":
+        regenerar(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif sys.argv[1] == "inicio":
         fijar_inicio(sys.argv[2])
         programar()
     elif sys.argv[1] == "programar":

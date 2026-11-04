@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.0,
+ "duracion_s": 66,
  "fecha": "2026-12-17",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Estatuto_Autonomia_Andalucia/EAA_01_Preliminar_y_Derechos.pdf",
+ "id": "norma-I10_Infracciones_Drogas",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Estatuto de Autonomía"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de drogas en Andalucía"
 }

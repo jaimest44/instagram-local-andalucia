@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 47.3,
+ "duracion_s": 76,
  "fecha": "2026-12-16",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LECrim_Ley_Enjuiciamiento_Criminal/LECrim_01_Policia_Judicial_Atestado.pdf",
+ "id": "norma-I09_Infracciones_Transportes",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la LECrim"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de transportes terrestres"
 }

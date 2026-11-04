@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 47.2,
+ "duracion_s": 68,
  "fecha": "2026-12-18",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Decreto_8-2026_Ingreso_Policia_Local/D8-2026_01_Normas_Comunes.pdf",
+ "id": "norma-I11_Infracciones_Transportes_Urbanos",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Decreto 8/2026 de ingreso"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de transportes urbanos"
 }

@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 40.0,
+ "duracion_s": 69,
  "fecha": "2026-12-19",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:TREBEP_RDL_5-2015/TREBEP_01_Empleados_Derechos_Deberes.pdf",
+ "id": "norma-I12_Infracciones_Tabaco",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el TREBEP"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de tabaco"
 }

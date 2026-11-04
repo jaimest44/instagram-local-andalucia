@@ -46,7 +46,7 @@ LECTURA = [  # lo que la voz lee mal tal cual
     (r"\bLECrim\b", "Ley de Enjuiciamiento Criminal"), (r"\bITV\b", "i te uve"), (r"\bDGT\b", "de ge te"),
     (r"(\d+)/(\d{4})", r"\1 de \2"), (r"(\d+) ?€", r"\1 euros"), (r"mg/l", "miligramos por litro"),
     (r"km/h", "kilómetros por hora"), (r"\bnº\s*", "número "), (r"\bD\.\s", "don "), (r"[«»\"“”]", ""),
-    (r"\s*\(([^)]*)\)", r", \1,"), (r"\s+", " "),
+    (r"\s*\(([^)]*)\)", r", \1,"), (r"<\s*(?=\d)", "menos de "), (r"\s+", " "),
 ]
 
 
@@ -245,12 +245,16 @@ def reel_infraccion(inf, gancho, destino):
         d.text((M, y + 10), f"y {inf['puntos']} puntos del carné", font=C.fuente(C.TIT, 92), fill=C.BLANCO)
         y += 130
     y += 40
-    y = tarjeta_texto(d, y, inf["organo"], titulo="QUIÉN SANCIONA", barra=C.AMBAR, maximo=72) + 24
-    tarjeta_texto(d, y, f"{inf['norma_media']} · {referencia}", titulo="DÓNDE LO DICE", maximo=46)
+    y = tarjeta_texto(d, y, inf["organo"], titulo="QUIÉN SANCIONA", barra=C.AMBAR, maximo=48) + 24
+    y = tarjeta_texto(d, y, f"{inf['norma_media']} · {referencia}", titulo="DÓNDE LO DICE", maximo=46) + 24
+    if inf.get("nota"):
+        tarjeta_texto(d, y, inf["nota"], barra=C.AMBAR, maximo=46)
     voz = f"Es una infracción {grav}. " + (f"Multa de {multa}." if multa[:1].isdigit() else f"Sanción: {multa}.")
     if inf.get("puntos"):
         voz += f" Y te quitan {inf['puntos']} puntos."
     voz += f" ¿Y quién sanciona? {inf.get('organo_voz', inf['organo'])}. Lo dice {inf['norma_media']}, {referencia}."
+    if inf.get("nota"):
+        voz += " " + inf["nota"]
     esc.append(Escena(img, voz, pausa=0.8))
 
     img, d = base("CODIFICADO DE INFRACCIONES")
@@ -275,7 +279,7 @@ def consejos_ficha(ruta):
     for l in lineas[i:]:
         if l.upper().startswith(("FUENTE", "MATERIAL DE ESTUDIO", "OPOSICIÓN")):
             break
-        if re.match(r"^[^\w\s(¿¡«\"'+\-–]", l):
+        if ord(l[0]) >= 0x2600:  # emoji o aviso = consejo nuevo; «< 5.000» o «% de...» siguen en la misma linea
             out.append([re.sub(r"^[^\wÁÉÍÓÚÑ¿¡«\"(]+", "", l).strip(), ""])
         elif out:
             out[-1][1] += " " + l
@@ -333,6 +337,7 @@ def reel_chuleta(carpeta_ley, pdf, ley, destino):
 # ---------------------------------------------------------------- formato 3: supuesto resuelto
 
 def frases(t):
+    t = t.replace("\\n", " ")  # algunos Excel traen «\n» escrito tal cual
     return [f.strip() for f in re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", t)) if f.strip()]
 
 

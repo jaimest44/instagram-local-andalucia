@@ -6,15 +6,34 @@
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2018/2018 Mollina SP.xlsx#2",
-   "gancho": "Un exmarido quiere llevarse a su hija a la fuerza y amenaza de muerte a la madre."
+   "gancho": "Un exmarido quiere llevarse a su hija a la fuerza y amenaza de muerte a la madre.",
+   "enunciado": "Una pareja separada. El exmarido quiere llevarse a la fuerza a la hija que tienen en común, amenaza de muerte a la madre y lleva más de dos meses sin pasarle la manutención de la menor.",
+   "cambios": [
+    [
+     "requiere querella de la persona agraviada",
+     "requiere denuncia de la persona agraviada"
+    ]
+   ]
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2018/2018 Mollina SP.xlsx#4",
-   "gancho": "Un conductor da 0,64 en el control y llama a su hermano para que se lleve el coche…"
+   "gancho": "Un conductor da 0,64 en el control y llama a su hermano para que se lleve el coche…",
+   "enunciado": "Control de alcoholemia a una persona que tiene el permiso B desde hace un año y 8 meses. Se le realiza con un etilómetro con menos de un año y da una tasa final de 0,64. Avisa a su hermano para que se haga cargo del vehículo; el hermano tiene el permiso B desde hace menos de un año y da una tasa final de 0,18."
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2018/2018 Mollina SP.xlsx#5",
-   "gancho": "Dos menores pintan grafitis en un parque arqueológico vallado mientras beben alcohol."
+   "gancho": "Dos menores pintan grafitis en un parque arqueológico vallado mientras beben alcohol.",
+   "enunciado": "Dos menores están en las afueras del casco urbano haciendo un grafiti en un parque arqueológico totalmente cercado, donde están acampando y consumiendo bebidas alcohólicas. Uno de ellos lleva 25 gramos de marihuana. Uno de los menores es inglés y está aquí de vacaciones.",
+   "cambios": [
+    [
+     "Pena de prisión de uno a tres años y multa de doce a veinticuatro meses.",
+     "Pena de prisión de seis meses a tres años o multa de doce a veinticuatro meses."
+    ],
+    [
+     "con la pena de prisión de uno a tres años y multa de doce a veinticuatro meses el que",
+     "con la pena de prisión de seis meses a tres años o multa de doce a veinticuatro meses el que"
+    ]
+   ]
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2019/2019 Villafranca SP 1-1.xlsx#30",
@@ -26,7 +45,13 @@
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 - La Rambla SP.xlsx#7",
-   "gancho": "Aparece un coche abierto, con las llaves puestas y lleno de golpes."
+   "gancho": "Aparece un coche abierto, con las llaves puestas y lleno de golpes.",
+   "cambios": [
+    [
+     "castigado con pena de multa de doce a veinticuatro meses",
+     "castigado con pena de multa de seis a veinticuatro meses"
+    ]
+   ]
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 Osuna SP.xlsx#8",
@@ -46,15 +71,27 @@
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2021/2021 Tomares SP.xlsx#5",
-   "gancho": "Un vecino empieza a increpar a la patrulla a gritos en plena calle."
+   "gancho": "Un vecino increpa a gritos a la patrulla desde su balcón y no quiere identificarse."
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2022/2022 - Armilla SP.xlsx#5",
-   "gancho": "Dos jóvenes le roban el bolso a una señora y uno de ellos lleva un cuchillo enorme."
+   "gancho": "Dos jóvenes le roban el bolso a una señora y uno de ellos lleva un cuchillo enorme.",
+   "cambios": [
+    [
+     "Al tratarse de un delito grave cometido de forma flagrante",
+     "Al tratarse de un robo con intimidación cometido de forma flagrante"
+    ]
+   ]
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2022/2022 - Armilla SP.xlsx#10",
-   "gancho": "Paras un coche: la ITV caducó en 2019… pero en el cristal lleva una pegatina válida hasta 2022."
+   "gancho": "Paras un coche: la ITV caducó en 2019… pero en el cristal lleva una pegatina válida hasta 2022.",
+   "cambios": [
+    [
+     "nº 342/2020",
+     "nº 346/2020"
+    ]
+   ]
   },
   {
    "id": "11. SUPUESTOS PRÁCTICOS/20. SOLUCIÓN EXCEL SP/SUBIDOS/2022/2022 - Peñarroya SP.xlsx#7",
@@ -140,7 +177,8 @@
   },
   {
    "clave": "Real Decreto 1428/2003|21.1.5F",
-   "gancho": "Te paran en un control de alcoholemia y dices: «Yo no soplo»."
+   "gancho": "Te paran en un control de alcoholemia y dices: «Yo no soplo».",
+   "nota": "Ojo: negarte a la prueba también puede ser delito (art. 383 CP)."
   },
   {
    "clave": "Real Decreto 1428/2003|118.2.5A",
@@ -167,7 +205,7 @@
    "gancho": "Conduces con los cascos puestos escuchando música."
   },
   {
-   "clave": "Real Decreto 1428/2003|18.2.5B",
+   "clave": "Real Decreto Legislativo 6/2015|76.-.5A",
    "gancho": "Vas conduciendo y coges el móvil para contestar un WhatsApp."
   },
   {
@@ -256,7 +294,7 @@
   },
   {
    "clave": "Real Decreto 1428/2003|56.2.5A",
-   "gancho": "Un agente dirige el tráfico en el cruce y no le haces caso."
+   "gancho": "Un agente dirige el cruce, no cedes el paso y obligas a otro coche a frenar en seco."
   },
   {
    "clave": "Ley 7/2006|8.3",
@@ -280,7 +318,7 @@
   },
   {
    "clave": "Ley 7/2006|8.4",
-   "gancho": "Un botellón en una plaza a las dos de la mañana, con música y gritos."
+   "gancho": "Un botellón junto a las urgencias del hospital, a las dos de la mañana, con música y gritos."
   },
   {
    "clave": "Ley Orgánica 4/2015|37.17",
@@ -300,7 +338,7 @@
   },
   {
    "clave": "Ley 50/1999|13.2.b",
-   "gancho": "Tu perro no tiene microchip."
+   "gancho": "Tu perro potencialmente peligroso no tiene microchip."
   },
   {
    "clave": "Ley 50/1999|13.1.b",

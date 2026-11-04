@@ -151,9 +151,20 @@ def chuletas():
     return out
 
 
+def corregir_supuesto(p, g):
+    """Erratas del Excel que no deben salir en el video: enunciado limpio y cambios [antes, despues] en la solucion."""
+    p = dict(p)
+    if g.get("enunciado"):
+        p["enunciado"] = g["enunciado"]
+    for antes, despues in g.get("cambios", []):
+        assert antes in p["justificacion"], antes
+        p["justificacion"] = p["justificacion"].replace(antes, despues)
+    return p
+
+
 def supuestos_con_gancho(ganchos):
     por_id = {p["id"]: p for p in datos.cargar("corta")}
-    return [(por_id[g["id"]], g["gancho"]) for g in ganchos.get("supuestos", []) if g["id"] in por_id]
+    return [(corregir_supuesto(por_id[g["id"]], g), g["gancho"]) for g in ganchos.get("supuestos", []) if g["id"] in por_id]
 
 
 # ---------------------------------------------------------------- textos
@@ -280,12 +291,13 @@ def fijar_inicio(fecha):
     print(f"Plan con voz desde {ini}: {quitadas} publicaciones antiguas quitadas de la cola.")
 
 
-def regenerar(solo=None):
+def regenerar(solo=None, carpetas=None):
     """Rehace video y texto de los reels con voz aun sin publicar (mismos contenidos y fechas) al cambiar las llamadas."""
     publicadas = leer_json(os.path.join(REPO, "estado", "publicadas.json"), {})
     ganchos = leer_json(GANCHOS, {})
     g_inf = {g["clave"]: g["gancho"] for g in ganchos["infracciones"]}
-    g_sup = {g["id"]: g["gancho"] for g in ganchos["supuestos"]}
+    g_sup = {g["id"]: g for g in ganchos["supuestos"]}
+    notas = {g["clave"]: g["nota"] for g in ganchos["infracciones"] if g.get("nota")}
     infr = {i["id"]: i for i in infracciones_calle()}
     sups = {p["id"]: p for p in datos.cargar("corta")}
     fichas = {f"ficha:{c}/{pdf}": (c, pdf, ley) for c, pdf, ley in chuletas()}
@@ -295,13 +307,13 @@ def regenerar(solo=None):
         if not str(meta.get("formato", "")).startswith("voz_") or d in publicadas:
             continue
         tipo = meta["formato"][4:]
-        if solo and tipo != solo:
+        if (solo and tipo != solo) or (carpetas and d not in carpetas):
             continue
         if tipo == "infraccion":
-            cosa = infr[meta["id"]]
+            cosa = dict(infr[meta["id"]], nota=notas.get(infr[meta["id"]]["clave"], ""))
             gancho = g_inf[cosa["clave"]]
         elif tipo == "supuesto":
-            cosa, gancho = sups[meta["id"]], g_sup[meta["id"]]
+            cosa, gancho = corregir_supuesto(sups[meta["id"]], g_sup[meta["id"]]), g_sup[meta["id"]]["gancho"]
         else:
             cosa = fichas[meta["id"]]
             trampas = R.consejos_ficha(os.path.join(I.FICHAS, cosa[0], cosa[1]))

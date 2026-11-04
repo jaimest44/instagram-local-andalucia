@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 43.5,
+ "duracion_s": 130,
  "fecha": "2026-12-09",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Emergencias_Ley_2-2002_y_Proteccion_Civil_Ley_17-2015/Emergencias_01_Ley2-2002_Andalucia.pdf",
+ "id": "norma-N33_Espectaculos_Andalucia",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "emergencias y protección civil"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 13/1999 de Espectáculos Públicos de Andalucía"
 }

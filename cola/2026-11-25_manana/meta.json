@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 57.4,
+ "duracion_s": 93,
  "fecha": "2026-11-25",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Codigo_Penal/CP_L1_01_Titulo_Preliminar_y_Delito.pdf",
+ "id": "norma-N20_Ley_7_2021",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Código Penal"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 7/2021 del territorio de Andalucía"
 }

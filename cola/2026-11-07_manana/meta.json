@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 43.8,
+ "duracion_s": 91,
  "fecha": "2026-11-07",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LBRL_Ley_7-1985_Regimen_Local/LBRL_01_Municipio_y_Organizacion.pdf",
+ "id": "norma-I03_Infracciones_Seguridad_Ciudadana",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley de Bases del Régimen Local"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de seguridad ciudadana"
 }

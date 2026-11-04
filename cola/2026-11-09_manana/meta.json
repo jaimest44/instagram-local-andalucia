@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 47.3,
+ "duracion_s": 81,
  "fecha": "2026-11-09",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LECrim_Ley_Enjuiciamiento_Criminal/LECrim_01_Policia_Judicial_Atestado.pdf",
+ "id": "norma-I04_Infracciones_Espectaculos",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la LECrim"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de espectáculos públicos"
 }

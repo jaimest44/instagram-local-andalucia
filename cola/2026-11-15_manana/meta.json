@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 40.0,
+ "duracion_s": 120,
  "fecha": "2026-11-15",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:TREBEP_RDL_5-2015/TREBEP_01_Empleados_Derechos_Deberes.pdf",
+ "id": "norma-N14_Autonomia_Local",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el TREBEP"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 5/2010 de Autonomía Local de Andalucía"
 }

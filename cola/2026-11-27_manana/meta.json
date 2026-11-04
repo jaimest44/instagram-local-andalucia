@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 50.8,
+ "duracion_s": 109,
  "fecha": "2026-11-27",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Ley_6-2023_Policias_Locales_Andalucia/Ley6-2023_01_Coordinacion_y_Cuerpos.pdf",
+ "id": "norma-N21_TFUE",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley 6/2023 de Policías Locales"
+ "serie": "Las normas en dibujos",
+ "tema": "Tratado de Funcionamiento de la UE"
 }

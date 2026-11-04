@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.5,
+ "duracion_s": 111,
  "fecha": "2026-11-05",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Ley_39-2015_Procedimiento_Administrativo/L39-2015_01_Interesados_y_Silencio.pdf",
+ "id": "norma-I01_Infracciones_Trafico",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley 39/2015"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de tráfico"
 }

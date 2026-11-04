@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.8,
+ "duracion_s": 116,
  "fecha": "2026-12-06",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Constitucion/CE_01_Titulo_Preliminar.pdf",
+ "id": "norma-N31_Comercio_Interior",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Constitución"
+ "serie": "Las normas en dibujos",
+ "tema": "Comercio Interior de Andalucía"
 }

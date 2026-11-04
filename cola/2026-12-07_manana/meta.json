@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 49.1,
+ "duracion_s": 148,
  "fecha": "2026-12-07",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:RGCir_RD_1428-2003_Reglamento_General_Circulacion/RGCir_01_Normas_Generales_y_Carga.pdf",
+ "id": "norma-N32_Reglamento_Vehiculos",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Reglamento General de Circulación"
+ "serie": "Las normas en dibujos",
+ "tema": "Reglamento General de Vehículos"
 }

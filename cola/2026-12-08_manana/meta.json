@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.8,
+ "duracion_s": 120,
  "fecha": "2026-12-08",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LSV_RDL_6-2015_Trafico_y_Seguridad_Vial/LSV_01_Competencias_y_Normas.pdf",
+ "id": "norma-N34_Registro_Victimas",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley de Tráfico"
+ "serie": "Las normas en dibujos",
+ "tema": "Orden INT/2223/2014, accidentes con víctimas"
 }

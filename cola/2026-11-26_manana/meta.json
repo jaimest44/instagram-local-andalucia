@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 48.9,
+ "duracion_s": 126,
  "fecha": "2026-11-26",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LO_2-1986_Fuerzas_y_Cuerpos_de_Seguridad/LO2-1986_01_Principios_Basicos.pdf",
+ "id": "norma-N13_Policias_Locales",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la LO 2/1986 de Fuerzas y Cuerpos de Seguridad"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 6/2023 de Policías Locales"
 }

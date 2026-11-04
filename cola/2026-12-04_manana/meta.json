@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 47.2,
+ "duracion_s": 138,
  "fecha": "2026-12-04",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Decreto_8-2026_Ingreso_Policia_Local/D8-2026_01_Normas_Comunes.pdf",
+ "id": "norma-N28_Funcion_Publica_Andalucia",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Decreto 8/2026 de ingreso"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 5/2023 de Función Pública de Andalucía"
 }

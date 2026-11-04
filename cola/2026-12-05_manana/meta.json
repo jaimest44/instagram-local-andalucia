@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 40.0,
+ "duracion_s": 116,
  "fecha": "2026-12-05",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:TREBEP_RDL_5-2015/TREBEP_01_Empleados_Derechos_Deberes.pdf",
+ "id": "norma-N30_Violencia_Genero_Andalucia",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el TREBEP"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 13/2007 de violencia de género en Andalucía"
 }

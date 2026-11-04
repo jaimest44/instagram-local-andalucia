@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 50.8,
+ "duracion_s": 138,
  "fecha": "2026-12-11",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Ley_6-2023_Policias_Locales_Andalucia/Ley6-2023_01_Coordinacion_y_Cuerpos.pdf",
+ "id": "norma-N36_Ley_del_Menor",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley 6/2023 de Policías Locales"
+ "serie": "Las normas en dibujos",
+ "tema": "LO 5/2000, Ley del Menor"
 }

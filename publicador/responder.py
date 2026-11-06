@@ -57,7 +57,7 @@ def main():
     mi_usuario = cuenta.get("username", "").lower()
     ahora = dt.datetime.now(dt.timezone.utc)
 
-    medios = api("GET", "me/media", fields="id,timestamp,caption", limit=30).get("data", [])
+    medios = api("GET", "me/media", fields="id,timestamp,comments_count", limit=30).get("data", [])
     recientes = [m for m in medios if ahora - fecha(m["timestamp"]) < VENTANA]
     vistos = enviados = 0
     for m in recientes:
@@ -91,7 +91,9 @@ def main():
                     print(f"Mensaje enviado, pero no la respuesta pública en {c['id']}: {e}", file=sys.stderr)
     if not a.simular:
         guardar(respondidos)
-    print(f"{len(recientes)} publicaciones de los últimos 7 días, {vistos} comentarios leídos, {enviados} mensajes enviados.")
+    total = sum(m.get("comments_count", 0) for m in recientes)
+    print(f"{len(recientes)} publicaciones de los últimos 7 días con {total} comentarios según Instagram; "
+          f"{vistos} comentarios leídos, {enviados} mensajes enviados.")
 
 
 if __name__ == "__main__":

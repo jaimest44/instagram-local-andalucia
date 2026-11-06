@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.8,
+ "duracion_s": 118,
  "fecha": "2026-12-22",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:LSV_RDL_6-2015_Trafico_y_Seguridad_Vial/LSV_01_Competencias_y_Normas.pdf",
+ "id": "norma-N41_Regimen_Electoral",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley de Tráfico"
+ "serie": "Las normas en dibujos",
+ "tema": "LO 5/1985 del Régimen Electoral General"
 }

@@ -34,7 +34,7 @@ MAX_SUPUESTO = 178  # segundos: por encima de 3 min Instagram no lo acepta como 
 FRANJAS = [("_manana", "manana", "chuleta"), ("_mediodia", "mediodia", "infraccion"), ("", "noche", "supuesto")]
 # 5/11/2026: Jaime pausa los supuestos automaticos de la noche. Vaciar para reanudar;
 # las carpetas que quedaban pendientes estan en cola_pausada/ (devolverlas a cola/).
-PAUSADOS = {"supuesto"}
+PAUSADOS = {"supuesto", "chuleta", "infraccion"}  # 6/11: Jaime quiere solo 1 al dia (supuesto en video / norma en video, scratchpad una_al_dia.py)
 HASHTAGS = "#policialocal #oposicionesandalucia #policialocalandalucia"
 
 

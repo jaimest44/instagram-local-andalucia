@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 109,
+ "convocatoria": "Mijas 2017 y Rincón de la Victoria 2019",
+ "duracion_s": 97,
  "fecha": "2026-11-27",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N21_TFUE",
+ "id": "supuesto-SUP11_Mijas2017_Rincon2019_semaforo_camion_moto",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "Tratado de Funcionamiento de la UE"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Mijas 2017 y Rincón de la Victoria 2019"
 }

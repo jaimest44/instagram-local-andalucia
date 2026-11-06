@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 93,
+ "convocatoria": "Huelma 2025",
+ "duracion_s": 63,
  "fecha": "2026-11-13",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-I02_Infracciones_Seguridad_Vial",
+ "id": "supuesto-SUP04_Patinete_sin_casco",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Infracciones en dibujos",
- "tema": "Infracciones de la Ley de Seguridad Vial"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Huelma 2025"
 }

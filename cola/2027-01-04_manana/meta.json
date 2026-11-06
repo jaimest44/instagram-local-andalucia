@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 49.1,
+ "duracion_s": 69,
  "fecha": "2027-01-04",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:RGCir_RD_1428-2003_Reglamento_General_Circulacion/RGCir_01_Normas_Generales_y_Carga.pdf",
+ "id": "norma-I12_Infracciones_Tabaco",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Reglamento General de Circulación"
+ "serie": "Infracciones en dibujos",
+ "tema": "Infracciones de tabaco"
 }

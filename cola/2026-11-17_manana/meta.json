@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 107,
+ "convocatoria": "Rincón de la Victoria 2021",
+ "duracion_s": 85,
  "fecha": "2026-11-17",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N16_Poder_Judicial",
+ "id": "supuesto-SUP06_Furgoneta_4200kg_permiso_B",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "LO 6/1985 del Poder Judicial"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Rincón de la Victoria 2021"
 }

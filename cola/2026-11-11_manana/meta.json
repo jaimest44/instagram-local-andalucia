@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 71,
+ "convocatoria": "Jerez de la Frontera 2023",
+ "duracion_s": 70,
  "fecha": "2026-11-11",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-I05_Infracciones_Animales",
+ "id": "supuesto-SUP03_Ciclista_de_noche_sin_reflectante",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Infracciones en dibujos",
- "tema": "Infracciones de protección de animales"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Jerez de la Frontera 2023"
 }

@@ -1,13 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion_s": 78,
+ "duracion_s": 109,
  "fecha": "2026-12-14",
  "formato": "video_norma",
  "franja": "manana",
- "id": "norma-I07_Infracciones_Conductores",
+ "id": "norma-N22_Reglamento_Conductores",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Infracciones en dibujos",
- "tema": "Infracciones del Reglamento de Conductores"
+ "serie": "Las normas en dibujos",
+ "tema": "Reglamento General de Conductores"
 }

@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.5,
+ "duracion_s": 109,
  "fecha": "2027-01-11",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Ley_39-2015_Procedimiento_Administrativo/L39-2015_01_Interesados_y_Silencio.pdf",
+ "id": "norma-N39_Ley_de_Igualdad",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley 39/2015"
+ "serie": "Las normas en dibujos",
+ "tema": "LO 3/2007 para la igualdad efectiva"
 }

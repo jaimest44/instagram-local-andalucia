@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 130,
+ "convocatoria": "Andújar 2023",
+ "duracion_s": 82,
  "fecha": "2026-12-03",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N29_Reglamento_de_Armas",
+ "id": "supuesto-SUP14_Andujar2023_patinete_menor_y_ciclomotor",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "RD 137/1993, Reglamento de Armas"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Andújar 2023"
 }

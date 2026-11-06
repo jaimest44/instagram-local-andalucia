@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 116,
+ "convocatoria": "Níjar 2024",
+ "duracion_s": 89,
  "fecha": "2026-11-21",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N18_Emergencias",
+ "id": "supuesto-SUP08_Nijar2024_triciclo_y_minimoto",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "Ley 2/2002 de Gestión de Emergencias en Andalucía"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Níjar 2024"
 }

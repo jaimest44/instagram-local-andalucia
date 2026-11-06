@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 120,
+ "convocatoria": "Villa del Río 2025",
+ "duracion_s": 93,
  "fecha": "2026-12-01",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N25_Regimen_Disciplinario",
+ "id": "supuesto-SUP13_VilladelRio2025_rojo_huida_y_moto",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "LO 4/2010, régimen disciplinario del Cuerpo Nacional de Policía"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Villa del Río 2025"
 }

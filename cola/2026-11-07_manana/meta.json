@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 91,
+ "convocatoria": "Adra 2024",
+ "duracion_s": 75,
  "fecha": "2026-11-07",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-I03_Infracciones_Seguridad_Ciudadana",
+ "id": "supuesto-SUP01_Adra2024_STOP_y_lesiones",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Infracciones en dibujos",
- "tema": "Infracciones de seguridad ciudadana"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Adra 2024"
 }

@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 148,
+ "convocatoria": "Almonte 2018",
+ "duracion_s": 106,
  "fecha": "2026-12-07",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N32_Reglamento_Vehiculos",
+ "id": "supuesto-SUP16_Almonte2018_tres_sujetos_y_bate",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "Reglamento General de Vehículos"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Almonte 2018"
 }

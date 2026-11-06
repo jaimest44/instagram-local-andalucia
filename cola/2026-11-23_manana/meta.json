@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 99,
+ "convocatoria": "Málaga 2020",
+ "duracion_s": 90,
  "fecha": "2026-11-23",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N19_RD_203_2021",
+ "id": "supuesto-SUP09_Malaga2020_ciclista_paseo_maritimo",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "RD 203/2021 de administración electrónica"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Málaga 2020"
 }

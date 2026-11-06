@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 41.9,
+ "duracion_s": 93,
  "fecha": "2027-01-09",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:RD_137-1993_Reglamento_de_Armas/RD137-1993_Armas.pdf",
+ "id": "norma-N43_Transportes_Terrestres",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "el Reglamento de Armas"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 16/1987 de Ordenación de los Transportes Terrestres"
 }

@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 93,
+ "convocatoria": "Motril 2022",
+ "duracion_s": 71,
  "fecha": "2026-11-29",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N23_Seguridad_Ciudadana",
+ "id": "supuesto-SUP12_Motril2022_patinete_acera_movil_25kmh",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "LO 4/2015 de Seguridad Ciudadana"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Motril 2022"
 }

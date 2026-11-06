@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 116,
+ "convocatoria": "Herrera 2018",
+ "duracion_s": 91,
  "fecha": "2026-12-05",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N30_Violencia_Genero_Andalucia",
+ "id": "supuesto-SUP15_Herrera2018_droga_menores_y_violencia",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "Ley 13/2007 de violencia de género en Andalucía"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Herrera 2018"
 }

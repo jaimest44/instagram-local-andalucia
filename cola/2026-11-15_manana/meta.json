@@ -1,13 +1,13 @@
 {
  "caso": "",
- "convocatoria": "",
- "duracion_s": 119,
+ "convocatoria": "Jaén 2026",
+ "duracion_s": 68,
  "fecha": "2026-11-15",
- "formato": "video_norma",
+ "formato": "video_supuesto",
  "franja": "manana",
- "id": "norma-N14_Autonomia_Local",
+ "id": "supuesto-SUP05_Patinete_de_noche_sin_luces",
  "imagenes": [],
  "reel": "reel.mp4",
- "serie": "Las normas en dibujos",
- "tema": "Ley 5/2010 de Autonomía Local de Andalucía"
+ "serie": "Supuestos oficiales resueltos en vídeo",
+ "tema": "Jaén 2026"
 }

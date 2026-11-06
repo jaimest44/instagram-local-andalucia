@@ -1,0 +1,56 @@
+name: Responder comentarios
+
+on:
+  schedule:
+    # GitHub se salta muchos cron; responder.py no repite respuestas, asi que no pasa nada si coincide
+    - cron: "*/20 7-22 * * *"
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "responder | simular"
+        default: "simular"
+        required: true
+
+permissions:
+  contents: write
+
+# grupo propio: si compartiera el de publicar, una ejecucion de este podria cancelar una publicacion en espera
+concurrency:
+  group: responder
+  cancel-in-progress: false
+
+jobs:
+  responder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Responder
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GRAPH_HOST: ${{ vars.GRAPH_HOST || 'graph.facebook.com' }}
+        run: |
+          MODO="${{ github.event.inputs.modo || 'responder' }}"
+          if [ "$MODO" = "simular" ]; then
+            python publicador/responder.py --simular
+          else
+            python publicador/responder.py
+          fi
+
+      - name: Guardar lo contestado
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain estado/respondidos.json)" ]; then
+            git config user.name "publicador-instagram"
+            git config user.email "actions@users.noreply.github.com"
+            git add estado/respondidos.json
+            git commit -m "Comentarios contestados $(date +%F)"
+            for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          fi

@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.8,
+ "duracion_s": 118,
  "fecha": "2026-12-20",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Constitucion/CE_01_Titulo_Preliminar.pdf",
+ "id": "norma-N38_Tribunal_Constitucional",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Constitución"
+ "serie": "Las normas en dibujos",
+ "tema": "LO 2/1979 del Tribunal Constitucional"
 }

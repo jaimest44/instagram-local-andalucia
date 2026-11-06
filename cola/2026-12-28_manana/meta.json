@@ -1,12 +1,13 @@
 {
  "caso": "",
  "convocatoria": "",
- "duracion": 46.5,
+ "duracion_s": 111,
  "fecha": "2026-12-28",
- "formato": "voz_chuleta",
+ "formato": "video_norma",
  "franja": "manana",
- "id": "ficha:Ley_39-2015_Procedimiento_Administrativo/L39-2015_01_Interesados_y_Silencio.pdf",
+ "id": "norma-N51_Ley_de_Drogas",
  "imagenes": [],
  "reel": "reel.mp4",
- "tema": "la Ley 39/2015"
+ "serie": "Las normas en dibujos",
+ "tema": "Ley 4/1997 de drogas de Andalucía"
 }

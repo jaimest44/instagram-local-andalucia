@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "publicar | simular | comprobar | diagnosticar | probar_reel"
+        description: "publicar | simular | comprobar | diagnosticar | probar_reel | formato_facebook"
         default: "comprobar"
         required: true
       carpeta:

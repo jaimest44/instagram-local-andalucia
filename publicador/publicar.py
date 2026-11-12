@@ -338,6 +338,17 @@ def plan_facebook(dia):
     return f"Facebook: vídeo normal ({dur}; los Reels de página admiten de {FB_REEL_MIN_S} a {FB_REEL_MAX_S} s)"
 
 
+class ReelRechazado(ErrorAPI):
+    """Facebook rejected the Reel and its status says it is not public: a normal video cannot duplicate it."""
+
+
+def fb_reel_publico(status):
+    """True if the Reel status says it is already public on the Page (even if an error is also reported)."""
+    st = status if isinstance(status, dict) else {}
+    publicacion = st.get("publishing_phase") if isinstance(st.get("publishing_phase"), dict) else {}
+    return publicacion.get("publish_status") == "published" or publicacion.get("status") in ("complete", "completed")
+
+
 def fb_fase_reel(status):
     """Read the 'status' object of a Reel: ('error', why) | ('publicado'|'subido'|'esperando', '')."""
     st = status if isinstance(status, dict) else {}
@@ -352,8 +363,7 @@ def fb_fase_reel(status):
         if datos.get("status") == "error" or datos.get("publish_status") == "error" or error:
             detalle = error.get("message") if isinstance(error, dict) else None
             return "error", detalle or f"{fase} con error"
-    publicacion = st.get("publishing_phase") if isinstance(st.get("publishing_phase"), dict) else {}
-    if publicacion.get("publish_status") == "published" or publicacion.get("status") in ("complete", "completed"):
+    if fb_reel_publico(st):
         return "publicado", ""
     subida = st.get("uploading_phase") if isinstance(st.get("uploading_phase"), dict) else {}
     if subida.get("status") in ("complete", "completed"):
@@ -361,15 +371,26 @@ def fb_fase_reel(status):
     return "esperando", ""
 
 
+def fb_leer_reel(video_id):
+    """One GET /{video-id}?fields=status -> 'esperando' | 'subido' | 'publicado'.
+    Raises ReelRechazado if Facebook reports an error and the Reel is not public, or plain ErrorAPI
+    if it reports an error on a Reel that is already public (that one must never be sent again)."""
+    status = fb_api("GET", video_id, fields="status").get("status")
+    estado, detalle = fb_fase_reel(status)
+    if estado == "error":
+        if fb_reel_publico(status):
+            raise ErrorAPI(f"Facebook informa de un error en el Reel {video_id}, pero ya está publicado: {detalle}")
+        raise ReelRechazado(f"Facebook rechazó el Reel {video_id}: {detalle}")
+    return estado
+
+
 def fb_esperar_reel(video_id, objetivo, maximo):
-    """Poll GET /{video-id}?fields=status until it reaches `objetivo` ('subido' or 'publicado').
-    Raises ErrorAPI if Facebook reports an error. On timeout returns the last state."""
+    """Poll the Reel status until it reaches `objetivo` ('subido' or 'publicado').
+    Errors are raised as in fb_leer_reel. On timeout returns the last state."""
     orden = {"esperando": 0, "subido": 1, "publicado": 2}
     inicio = time.monotonic()
     while True:
-        estado, detalle = fb_fase_reel(fb_api("GET", video_id, fields="status").get("status"))
-        if estado == "error":
-            raise ErrorAPI(f"Facebook rechazó el Reel {video_id}: {detalle}")
+        estado = fb_leer_reel(video_id)
         if orden[estado] >= orden[objetivo] or time.monotonic() - inicio > maximo:
             return estado
         time.sleep(5)
@@ -401,11 +422,23 @@ def fb_preparar_reel(pagina, ruta_local, url_video):
 
 
 def fb_publicar_reel(pagina, video_id, texto):
-    """Reel phase 3: publish it on the Page with the description. Returns the result for publicadas.json."""
-    fin = fb_api("POST", f"{pagina}/video_reels", upload_phase="finish", video_id=video_id,
-                 video_state="PUBLISHED", description=texto)
-    if not fin.get("success"):
-        raise ErrorAPI(f"Facebook no publicó el Reel {video_id}: {str(fin)[:200]}")
+    """Reel phase 3: publish it on the Page with the description. Returns the result for publicadas.json.
+    Raises ReelRechazado only when Facebook's status says the Reel was rejected and is not public."""
+    try:
+        fin = fb_api("POST", f"{pagina}/video_reels", upload_phase="finish", video_id=video_id,
+                     video_state="PUBLISHED", description=texto)
+        if not fin.get("success"):
+            raise ErrorAPI(f"Facebook no publicó el Reel {video_id}: {str(fin)[:200]}")
+    except ErrorAPI as e:
+        # The finish call failed: ask for the status once. If it clearly says rejected and not public,
+        # fb_leer_reel raises ReelRechazado; otherwise (unknown, still processing, public) keep this error.
+        try:
+            fb_leer_reel(video_id)
+        except ReelRechazado:
+            raise
+        except ErrorAPI:
+            pass
+        raise e
     estado = fb_esperar_reel(video_id, "publicado", FB_ESPERA_PUBLICADO_S)
     resultado = {"video_id": video_id, "formato": "reel",
                  "estado": "publicado" if estado == "publicado" else "procesando"}
@@ -422,7 +455,8 @@ def fb_video_normal(pagina, url_video, texto):
 
 def publicar_video_facebook(pagina, carpeta, meta, url_video, texto):
     """90 s or less -> Page Reel; longer (or unknown) -> normal video.
-    If the Reel fails before it is published, it falls back to a normal video so the day is not lost."""
+    If the Reel is not published (it fails before "finish", or Facebook rejects it afterwards and its
+    status says it is not public), it falls back to a normal video so the day is not lost."""
     segundos, _ = duracion_video(carpeta, meta)
     dur = round(segundos, 1) if segundos is not None else None
     if formato_facebook(segundos) == "video":
@@ -432,8 +466,15 @@ def publicar_video_facebook(pagina, carpeta, meta, url_video, texto):
     except Exception as e:  # noqa: BLE001 - nothing published yet, so a normal video is safe
         print(f"::warning::Facebook no aceptó el vídeo como Reel ({e}). Se publica como vídeo normal.")
         return {**fb_video_normal(pagina, url_video, texto), "duracion_s": dur, "reel_error": str(e)[:300]}
-    # From here on the Reel may already be public: never fall back (it could publish it twice)
-    return {**fb_publicar_reel(pagina, video_id, texto), "duracion_s": dur}
+    # From here on the Reel may already be public: fall back only if Facebook says it rejected it and it
+    # is not public (ReelRechazado). Any other error is raised, so it is never published twice.
+    try:
+        return {**fb_publicar_reel(pagina, video_id, texto), "duracion_s": dur}
+    except ReelRechazado as e:
+        print(f"::warning::Facebook rechazó el Reel tras pedir su publicación y no está publicado ({e}). "
+              f"Se publica como vídeo normal.")
+        return {**fb_video_normal(pagina, url_video, texto), "duracion_s": dur, "reel_error": str(e)[:300],
+                "reel_video_id": video_id}
 
 
 def publicar_facebook(dia):

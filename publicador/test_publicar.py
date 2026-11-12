@@ -54,7 +54,7 @@ class GraphFalso:
 
     def __init__(self, reel_falla_en=None, estados=None):
         self.peticiones = []
-        self.reel_falla_en = reel_falla_en  # "start" | "upload" | None
+        self.reel_falla_en = reel_falla_en  # "start" | "upload" | "finish" | None
         self.estados = list(estados or [
             {"video_status": "upload_complete", "uploading_phase": {"status": "complete"}},
             {"video_status": "ready", "uploading_phase": {"status": "complete"},
@@ -84,6 +84,8 @@ class GraphFalso:
             return self.ok({"status": self.estados.pop(0) if len(self.estados) > 1 else self.estados[0],
                             "id": "111"})
         if ruta.endswith("/video_reels") and params.get("upload_phase") == "finish":
+            if self.reel_falla_en == "finish":
+                raise self.error(400, {"error": {"message": "No se pudo publicar el vídeo"}})
             return self.ok({"success": True, "post_id": "999"})
         if ruta.endswith("/videos"):
             return self.ok({"id": "222"})
@@ -179,6 +181,14 @@ class EstadoDelReel(unittest.TestCase):
         self.assertEqual(publicar.fb_fase_reel(st), ("error", "File is not a video"))
         self.assertEqual(publicar.fb_fase_reel({"uploading_phase": {"status": "completed", "errors": []}}),
                          ("subido", ""))
+
+    def test_reel_publico(self):
+        self.assertTrue(publicar.fb_reel_publico({"publishing_phase": {"publish_status": "published"}}))
+        self.assertTrue(publicar.fb_reel_publico({"publishing_phase": {"status": "complete"}}))
+        self.assertFalse(publicar.fb_reel_publico({"video_status": "error"}))
+        self.assertFalse(publicar.fb_reel_publico({"publishing_phase": {"status": "error", "publish_status": "error"}}))
+        self.assertFalse(publicar.fb_reel_publico({"publishing_phase": {"status": "not_started"}}))
+        self.assertFalse(publicar.fb_reel_publico(None))
 
 
 # ---------------------------------------------------------------- full Facebook flow, with a fake API
@@ -294,14 +304,72 @@ class PublicarFacebook(unittest.TestCase):
         self.assertEqual(r["formato"], "video")
         self.assertIn("Resolution too low", r["reel_error"])
 
-    def test_error_despues_de_publicar_no_duplica(self):
-        # after "finish" the Reel may be public: an error is reported, never a second (normal) video
+    def comprobar_reserva_tras_finish(self, api, r, texto_error):
+        """The Reel was rejected after "finish": exactly one finish, then one normal video."""
+        self.assertEqual(r["formato"], "video")
+        self.assertEqual(r["video_id"], "222")
+        self.assertEqual(r["reel_video_id"], "111")
+        self.assertIn(texto_error, r["reel_error"])
+        fases = [p["params"].get("upload_phase") for p in api.peticiones]
+        self.assertEqual(fases.count("finish"), 1)
+        self.assertEqual(api.rutas().count("/v24.0/PAGINA/videos"), 1)
+        self.assertLess(fases.index("finish"), api.rutas().index("/v24.0/PAGINA/videos"))
+
+    def test_rechazo_despues_del_finish_va_como_video_normal(self):
+        # Facebook accepts "finish" and rejects the Reel while processing it: it is not public,
+        # so a normal video cannot duplicate it and the day is not lost
+        subido = {"video_status": "upload_complete", "uploading_phase": {"status": "complete"}}
+        rechazos = {
+            "video_status_error": ({"video_status": "error", "uploading_phase": {"status": "complete"}},
+                                   "video_status=error"),
+            "processing_phase": ({"video_status": "processing", "uploading_phase": {"status": "complete"},
+                                  "processing_phase": {"status": "error",
+                                                       "error": {"message": "Video too long for Reels"}},
+                                  "publishing_phase": {"status": "not_started"}}, "Video too long"),
+            "publish_status_error": ({"uploading_phase": {"status": "complete"},
+                                      "publishing_phase": {"status": "error", "publish_status": "error"}},
+                                     "publishing_phase con error"),
+        }
+        for nombre, (rechazo, texto_error) in rechazos.items():
+            with self.subTest(rechazo=nombre):
+                api = GraphFalso(estados=[subido, rechazo])
+                r = self.publicar(self.dia(f"rechazo_{nombre}", 89.8), api)
+                self.comprobar_reserva_tras_finish(api, r, texto_error)
+
+    def test_finish_falla_y_facebook_dice_que_lo_rechazo(self):
         estados = [{"uploading_phase": {"status": "complete"}},
-                   {"uploading_phase": {"status": "complete"},
-                    "publishing_phase": {"status": "error", "publish_status": "error"}}]
+                   {"video_status": "error", "uploading_phase": {"status": "complete"}}]
+        api = GraphFalso(reel_falla_en="finish", estados=estados)
+        r = self.publicar(self.dia("finish_rechazado", 45), api)
+        self.comprobar_reserva_tras_finish(api, r, "video_status=error")
+
+    def test_finish_falla_sin_rechazo_claro_no_duplica(self):
+        # the status shows no error: the Reel could still go public, so only the error is reported
+        api = GraphFalso(reel_falla_en="finish", estados=[{"uploading_phase": {"status": "complete"}}])
+        with self.assertRaises(publicar.ErrorAPI) as ctx:
+            self.publicar(self.dia("finish_dudoso", 45), api)
+        self.assertNotIsInstance(ctx.exception, publicar.ReelRechazado)
+        self.assertIn("No se pudo publicar el vídeo", str(ctx.exception))
+        self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
+
+    def test_error_con_el_reel_ya_publicado_no_duplica(self):
+        # an error on a Reel whose status says it is public: reported, never a second (normal) video
+        estados = [{"uploading_phase": {"status": "complete"}},
+                   {"video_status": "error", "uploading_phase": {"status": "complete"},
+                    "publishing_phase": {"status": "complete", "publish_status": "published"}}]
         api = GraphFalso(estados=estados)
-        with self.assertRaises(publicar.ErrorAPI):
-            self.publicar(self.dia("falla_al_publicar", 30), api)
+        with self.assertRaises(publicar.ErrorAPI) as ctx:
+            self.publicar(self.dia("falla_ya_publicado", 30), api)
+        self.assertNotIsInstance(ctx.exception, publicar.ReelRechazado)
+        self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
+
+    def test_si_tarda_en_publicarse_no_duplica(self):
+        # still processing when the wait ends: it may go public later, so no normal video
+        api = GraphFalso(estados=[{"uploading_phase": {"status": "complete"}}])
+        with mock.patch.object(publicar, "FB_ESPERA_PUBLICADO_S", -1):
+            r = self.publicar(self.dia("lento", 30), api)
+        self.assertEqual(r["formato"], "reel")
+        self.assertEqual(r["estado"], "procesando")
         self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
 
     def test_las_fotos_no_cambian(self):

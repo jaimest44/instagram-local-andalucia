@@ -13,12 +13,17 @@ Opcionales:
     python publicar.py              publica lo pendiente de hoy
     python publicar.py --comprobar  solo comprueba que el token funciona y que hay cola
     python publicar.py --simular    dice que publicaria, sin publicar
+    python publicar.py --formato_facebook  dice si cada video de la cola ira a Facebook como Reel
+                                           o como video normal (no usa el token ni publica nada)
+
+En la pagina de Facebook, los videos de 90 s o menos se publican como Reel; los mas largos, como video normal.
 """
 import argparse
 import datetime as dt
 import json
 import os
 import re
+import struct
 import sys
 import time
 import urllib.error
@@ -202,6 +207,28 @@ def diagnosticar():
 
 # ---------------------------------------------------------------- Facebook (pagina)
 
+def _fb_enviar(req, intentos=3):
+    """Send a Facebook request, retrying server errors. The token is never printed."""
+    for intento in range(intentos):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            cuerpo = e.read().decode(errors="replace")
+            e.close()
+            if e.code >= 500 and intento < intentos - 1:
+                time.sleep(10 * (intento + 1))
+                continue
+            try:
+                j = json.loads(cuerpo)
+                j = j if isinstance(j, dict) else {}
+                # Graph errors come in "error"; rupload.facebook.com errors come in "debug_info"
+                msg = (j.get("error") or j.get("debug_info") or {}).get("message", cuerpo)
+            except ValueError:
+                msg = cuerpo
+            raise ErrorAPI(f"Facebook {e.code}: {msg[:300]}") from None
+
+
 def fb_api(metodo, ruta, host="graph.facebook.com", **params):
     """Llamada a la API de Facebook con el token de la PAGINA (secreto FB_PAGE_TOKEN)."""
     params["access_token"] = os.environ["FB_PAGE_TOKEN"]
@@ -209,20 +236,7 @@ def fb_api(metodo, ruta, host="graph.facebook.com", **params):
     datos = urllib.parse.urlencode(params).encode()
     req = urllib.request.Request(url, data=datos, method="POST") if metodo == "POST" \
         else urllib.request.Request(url + "?" + datos.decode())
-    for intento in range(3):
-        try:
-            with urllib.request.urlopen(req, timeout=120) as r:
-                return json.load(r)
-        except urllib.error.HTTPError as e:
-            cuerpo = e.read().decode(errors="replace")
-            if e.code >= 500 and intento < 2:
-                time.sleep(10 * (intento + 1))
-                continue
-            try:
-                msg = json.loads(cuerpo).get("error", {}).get("message", cuerpo)
-            except ValueError:
-                msg = cuerpo
-            raise ErrorAPI(f"Facebook {e.code}: {msg[:300]}") from None
+    return _fb_enviar(req)
 
 
 def texto_facebook(texto):
@@ -230,6 +244,196 @@ def texto_facebook(texto):
     texto = texto.replace(" (enlace en la bio)", "").replace("(enlace en la bio)", "")
     return re.sub(r"(?<![/\w.])(app\.[a-z]+\.com)\b",
                   r"https://\1/?utm_source=facebook&utm_medium=post", texto)
+
+
+# ---------------------------------------------------------------- Facebook: Reel or normal video
+
+# Facebook Page Reels accept videos from 3 to 90 seconds (Meta "Reels Publishing API" guide).
+FB_REEL_MIN_S = 3
+FB_REEL_MAX_S = 90
+FB_ESPERA_SUBIDA_S = 300  # how long to wait for Facebook to fetch the hosted file
+FB_ESPERA_PUBLICADO_S = 300  # how long to wait for the Reel to show as published after "finish"
+
+
+def _cajas_mp4(f, inicio, fin):
+    """Yield (type, payload_start, box_end) for each ISO-BMFF box between inicio and fin."""
+    pos = inicio
+    while pos + 8 <= fin:
+        f.seek(pos)
+        cabecera = f.read(8)
+        if len(cabecera) < 8:
+            return
+        tam, tipo = struct.unpack(">I4s", cabecera)
+        datos = pos + 8
+        if tam == 1:  # 64-bit size follows the type
+            ext = f.read(8)
+            if len(ext) < 8:
+                return
+            tam = struct.unpack(">Q", ext)[0]
+            datos += 8
+        elif tam == 0:  # box runs to the end of the file
+            tam = fin - pos
+        if tam < datos - pos:  # corrupt size: stop instead of looping forever
+            return
+        yield tipo, datos, pos + tam
+        pos += tam
+
+
+def duracion_mp4(ruta):
+    """Duration in seconds from the mp4 'moov/mvhd' box (stdlib only), or None if it cannot be read."""
+    try:
+        with open(ruta, "rb") as f:
+            for tipo, ini, fin in _cajas_mp4(f, 0, os.path.getsize(ruta)):
+                if tipo != b"moov":
+                    continue
+                for tipo2, ini2, _ in _cajas_mp4(f, ini, fin):
+                    if tipo2 != b"mvhd":
+                        continue
+                    f.seek(ini2)
+                    version = f.read(4)[0]  # 1 byte version + 3 bytes flags
+                    if version == 1:
+                        _, _, escala, dur = struct.unpack(">QQIQ", f.read(28))
+                        desconocida = 0xFFFFFFFFFFFFFFFF
+                    else:
+                        _, _, escala, dur = struct.unpack(">IIII", f.read(16))
+                        desconocida = 0xFFFFFFFF
+                    if not escala or not dur or dur == desconocida:
+                        return None
+                    return dur / escala
+    except (OSError, struct.error, IndexError):
+        return None
+    return None
+
+
+def duracion_video(carpeta, meta):
+    """(seconds, source) of the day's video: exact from the file if possible, else the queue metadata."""
+    if meta.get("reel"):
+        segundos = duracion_mp4(os.path.join(carpeta, meta["reel"]))
+        if segundos:
+            return segundos, "archivo"
+    for clave in ("duracion", "duracion_s"):  # plan_voz.py writes "duracion"; una_al_dia.py "duracion_s"
+        valor = meta.get(clave)
+        if isinstance(valor, (int, float)) and not isinstance(valor, bool) and valor > 0:
+            return float(valor), "meta"
+    return None, "desconocida"
+
+
+def formato_facebook(segundos):
+    """'reel' if the Page accepts it as a Reel (3-90 s), else 'video'. Unknown duration -> 'video'."""
+    if segundos is not None and FB_REEL_MIN_S <= segundos <= FB_REEL_MAX_S:
+        return "reel"
+    return "video"
+
+
+def plan_facebook(dia):
+    """One line saying how the day's post would go to Facebook (no API call, no token)."""
+    carpeta = os.path.join(COLA, dia)
+    meta = leer_json(os.path.join(carpeta, "meta.json"), {})
+    if not meta.get("reel"):
+        return "Facebook: publicación con fotos"
+    segundos, origen = duracion_video(carpeta, meta)
+    dur = f"{segundos:.1f} s, según el {origen}" if segundos is not None else "duración desconocida"
+    if formato_facebook(segundos) == "reel":
+        return f"Facebook: Reel ({dur})"
+    return f"Facebook: vídeo normal ({dur}; los Reels de página admiten de {FB_REEL_MIN_S} a {FB_REEL_MAX_S} s)"
+
+
+def fb_fase_reel(status):
+    """Read the 'status' object of a Reel: ('error', why) | ('publicado'|'subido'|'esperando', '')."""
+    st = status if isinstance(status, dict) else {}
+    if st.get("video_status") in ("upload_failed", "error", "expired"):
+        return "error", f"video_status={st['video_status']}"
+    for fase in ("uploading_phase", "processing_phase", "publishing_phase"):
+        datos = st.get(fase) if isinstance(st.get(fase), dict) else {}
+        # processing/publishing report "error" (object); uploading_phase reports "errors" (list)
+        error = datos.get("error") or datos.get("errors")
+        if isinstance(error, list):
+            error = error[0] if error else None
+        if datos.get("status") == "error" or datos.get("publish_status") == "error" or error:
+            detalle = error.get("message") if isinstance(error, dict) else None
+            return "error", detalle or f"{fase} con error"
+    publicacion = st.get("publishing_phase") if isinstance(st.get("publishing_phase"), dict) else {}
+    if publicacion.get("publish_status") == "published" or publicacion.get("status") in ("complete", "completed"):
+        return "publicado", ""
+    subida = st.get("uploading_phase") if isinstance(st.get("uploading_phase"), dict) else {}
+    if subida.get("status") in ("complete", "completed"):
+        return "subido", ""
+    return "esperando", ""
+
+
+def fb_esperar_reel(video_id, objetivo, maximo):
+    """Poll GET /{video-id}?fields=status until it reaches `objetivo` ('subido' or 'publicado').
+    Raises ErrorAPI if Facebook reports an error. On timeout returns the last state."""
+    orden = {"esperando": 0, "subido": 1, "publicado": 2}
+    inicio = time.monotonic()
+    while True:
+        estado, detalle = fb_fase_reel(fb_api("GET", video_id, fields="status").get("status"))
+        if estado == "error":
+            raise ErrorAPI(f"Facebook rechazó el Reel {video_id}: {detalle}")
+        if orden[estado] >= orden[objetivo] or time.monotonic() - inicio > maximo:
+            return estado
+        time.sleep(5)
+
+
+def fb_preparar_reel(pagina, ruta_local, url_video):
+    """Reel phases 1 and 2: open an upload session and send the mp4 to rupload.facebook.com.
+    Sends the bytes of the local file (the Actions checkout has it); if it is missing, Facebook
+    fetches the hosted copy from file_url. Nothing is published yet. Returns the video_id."""
+    sesion = fb_api("POST", f"{pagina}/video_reels", upload_phase="start")
+    video_id = sesion["video_id"]
+    cabeceras = {"Authorization": f"OAuth {os.environ['FB_PAGE_TOKEN']}"}
+    datos = None
+    if ruta_local and os.path.isfile(ruta_local):
+        with open(ruta_local, "rb") as f:
+            datos = f.read()
+        cabeceras.update({"offset": "0", "file_size": str(len(datos)),
+                          "Content-Type": "application/octet-stream"})
+    else:
+        cabeceras["file_url"] = url_video  # no body: Facebook downloads the hosted file
+    req = urllib.request.Request(f"https://rupload.facebook.com/video-upload/{VERSION}/{video_id}",
+                                 data=datos, method="POST", headers=cabeceras)
+    subida = _fb_enviar(req)
+    if not subida.get("success"):
+        raise ErrorAPI(f"Facebook no aceptó la subida del Reel {video_id}: {str(subida)[:200]}")
+    if fb_esperar_reel(video_id, "subido", FB_ESPERA_SUBIDA_S) == "esperando":
+        raise ErrorAPI(f"Facebook no terminó de recibir el Reel {video_id} en {FB_ESPERA_SUBIDA_S} s")
+    return video_id
+
+
+def fb_publicar_reel(pagina, video_id, texto):
+    """Reel phase 3: publish it on the Page with the description. Returns the result for publicadas.json."""
+    fin = fb_api("POST", f"{pagina}/video_reels", upload_phase="finish", video_id=video_id,
+                 video_state="PUBLISHED", description=texto)
+    if not fin.get("success"):
+        raise ErrorAPI(f"Facebook no publicó el Reel {video_id}: {str(fin)[:200]}")
+    estado = fb_esperar_reel(video_id, "publicado", FB_ESPERA_PUBLICADO_S)
+    resultado = {"video_id": video_id, "formato": "reel",
+                 "estado": "publicado" if estado == "publicado" else "procesando"}
+    if fin.get("post_id"):
+        resultado["post_id"] = fin["post_id"]
+    return resultado
+
+
+def fb_video_normal(pagina, url_video, texto):
+    """Normal Page video (what was always done): Facebook downloads it from file_url."""
+    r = fb_api("POST", f"{pagina}/videos", host="graph-video.facebook.com", file_url=url_video, description=texto)
+    return {"video_id": r.get("id"), "formato": "video"}
+
+
+def publicar_video_facebook(pagina, carpeta, meta, url_video, texto):
+    """90 s or less -> Page Reel; longer (or unknown) -> normal video.
+    If the Reel fails before it is published, it falls back to a normal video so the day is not lost."""
+    segundos, _ = duracion_video(carpeta, meta)
+    dur = round(segundos, 1) if segundos is not None else None
+    if formato_facebook(segundos) == "video":
+        return {**fb_video_normal(pagina, url_video, texto), "duracion_s": dur}
+    try:
+        video_id = fb_preparar_reel(pagina, os.path.join(carpeta, meta["reel"]), url_video)
+    except Exception as e:  # noqa: BLE001 - nothing published yet, so a normal video is safe
+        print(f"::warning::Facebook no aceptó el vídeo como Reel ({e}). Se publica como vídeo normal.")
+        return {**fb_video_normal(pagina, url_video, texto), "duracion_s": dur, "reel_error": str(e)[:300]}
+    # From here on the Reel may already be public: never fall back (it could publish it twice)
+    return {**fb_publicar_reel(pagina, video_id, texto), "duracion_s": dur}
 
 
 def publicar_facebook(dia):
@@ -244,9 +448,7 @@ def publicar_facebook(dia):
         texto = texto_facebook(f.read())
     base = f"{url_base()}/{dia}"
     if meta.get("reel"):
-        r = fb_api("POST", f"{pagina}/videos", host="graph-video.facebook.com",
-                   file_url=f"{base}/{meta['reel']}", description=texto)
-        return {"video_id": r.get("id")}
+        return publicar_video_facebook(pagina, carpeta, meta, f"{base}/{meta['reel']}", texto)
     fotos = [fb_api("POST", f"{pagina}/photos", url=f"{base}/{img}", published="false")["id"]
              for img in meta["imagenes"]]
     r = fb_api("POST", f"{pagina}/feed", message=texto,
@@ -264,7 +466,19 @@ def main():
                     help="publica YA la carpeta indicada en PROBAR_CARPETA (publicaciones puntuales)")
     ap.add_argument("--probar_reel", action="store_true",
                     help="Instagram descarga y procesa el proximo Reel de la cola, sin publicarlo")
+    ap.add_argument("--formato_facebook", action="store_true",
+                    help="dice si cada video de la cola ira a Facebook como Reel o como video normal (sin token)")
     a = ap.parse_args()
+
+    if a.formato_facebook:  # local check only: reads cola/, never calls the API
+        hoy_str = dt.datetime.now(ZoneInfo("Europe/Madrid")).date().isoformat()
+        hechas = leer_json(PUBLICADAS, {})
+        dias = sorted(d for d in os.listdir(COLA) if d[:10] >= hoy_str and d not in hechas
+                      and os.path.isfile(os.path.join(COLA, d, "meta.json"))) if os.path.isdir(COLA) else []
+        for d in dias:
+            print(f"{d:<22} {plan_facebook(d)}")
+        print(f"{len(dias)} publicaciones pendientes revisadas. No se ha publicado nada.")
+        return
 
     ahora = dt.datetime.now(ZoneInfo("Europe/Madrid"))
     hoy = ahora.date()
@@ -334,6 +548,7 @@ def main():
             return
         if a.simular:
             print(f"Publicaría {dia}: {url_base()}/{dia}")
+            print(plan_facebook(dia))
             return
     meta_dia = leer_json(os.path.join(COLA, dia, "meta.json"), {})
     if meta_dia.get("solo_facebook"):  # p. ej. videos de mas de 3 min: no caben como Reel

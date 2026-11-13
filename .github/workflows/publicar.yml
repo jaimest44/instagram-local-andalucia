@@ -12,11 +12,11 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "publicar | simular | comprobar | diagnosticar | probar_reel | formato_facebook"
+        description: "publicar | simular | comprobar | diagnosticar | probar_reel | formato_facebook | probar_reel_facebook"
         default: "comprobar"
         required: true
       carpeta:
-        description: "solo para probar_reel: carpeta de cola/ a probar (opcional)"
+        description: "solo para probar_reel y probar_reel_facebook: carpeta de cola/ a probar (opcional)"
         required: false
 
 permissions:

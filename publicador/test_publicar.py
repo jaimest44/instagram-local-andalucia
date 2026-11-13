@@ -52,9 +52,10 @@ class Respuesta(io.BytesIO):
 class GraphFalso:
     """Fake urlopen: records each request and answers like Facebook would."""
 
-    def __init__(self, reel_falla_en=None, estados=None):
+    def __init__(self, reel_falla_en=None, estados=None, error_finish=400):
         self.peticiones = []
         self.reel_falla_en = reel_falla_en  # "start" | "upload" | "finish" | None
+        self.error_finish = error_finish  # HTTP code of a failing finish; "timeout" | "sin_success" also valid
         self.estados = list(estados or [
             {"video_status": "upload_complete", "uploading_phase": {"status": "complete"}},
             {"video_status": "ready", "uploading_phase": {"status": "complete"},
@@ -85,7 +86,11 @@ class GraphFalso:
                             "id": "111"})
         if ruta.endswith("/video_reels") and params.get("upload_phase") == "finish":
             if self.reel_falla_en == "finish":
-                raise self.error(400, {"error": {"message": "No se pudo publicar el vídeo"}})
+                if self.error_finish == "timeout":
+                    raise urllib.error.URLError(TimeoutError("timed out"))
+                if self.error_finish == "sin_success":
+                    return self.ok({"success": False})
+                raise self.error(self.error_finish, {"error": {"message": "No se pudo publicar el vídeo"}})
             return self.ok({"success": True, "post_id": "999"})
         if ruta.endswith("/videos"):
             return self.ok({"id": "222"})
@@ -189,6 +194,16 @@ class EstadoDelReel(unittest.TestCase):
         self.assertFalse(publicar.fb_reel_publico({"publishing_phase": {"status": "error", "publish_status": "error"}}))
         self.assertFalse(publicar.fb_reel_publico({"publishing_phase": {"status": "not_started"}}))
         self.assertFalse(publicar.fb_reel_publico(None))
+
+    def test_publicacion_sin_empezar(self):
+        self.assertTrue(publicar.fb_publicacion_sin_empezar({"publishing_phase": {"status": "not_started"}}))
+        self.assertFalse(publicar.fb_publicacion_sin_empezar({"publishing_phase": {"status": "in_progress"}}))
+        # Meta's example status: not_started but already "published" -> it is public, never a second video
+        self.assertFalse(publicar.fb_publicacion_sin_empezar({"publishing_phase": {"status": "not_started",
+                                                                                   "publish_status": "published"}}))
+        # not stated explicitly -> not assumed
+        self.assertFalse(publicar.fb_publicacion_sin_empezar({"uploading_phase": {"status": "complete"}}))
+        self.assertFalse(publicar.fb_publicacion_sin_empezar(None))
 
 
 # ---------------------------------------------------------------- full Facebook flow, with a fake API
@@ -352,6 +367,41 @@ class PublicarFacebook(unittest.TestCase):
         self.assertIn("No se pudo publicar el vídeo", str(ctx.exception))
         self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
 
+    # status of a Reel that was uploaded but whose publication never started (Meta's status format)
+    SIN_EMPEZAR = {"video_status": "upload_complete", "uploading_phase": {"status": "complete"},
+                   "processing_phase": {"status": "not_started"},
+                   "publishing_phase": {"status": "not_started"}}
+
+    def test_finish_rechazado_con_4xx_y_sin_empezar_va_como_video_normal(self):
+        # e.g. the Page token lacks the Reels permission: start and upload work, Facebook refuses "finish"
+        # (4xx) and the Reel is still only uploaded, so a normal video cannot duplicate it
+        for codigo in (400, 403):
+            with self.subTest(codigo=codigo):
+                api = GraphFalso(reel_falla_en="finish", error_finish=codigo, estados=[self.SIN_EMPEZAR])
+                r = self.publicar(self.dia(f"sin_permiso_{codigo}", 62.77), api)
+                self.comprobar_reserva_tras_finish(api, r, f"Facebook {codigo}: No se pudo publicar el vídeo")
+                self.assertIn("no se ha empezado a publicar", r["reel_error"])
+
+    def test_finish_fallido_sin_certeza_no_duplica(self):
+        # whenever the Reel might still go out, the error is reported and no normal video is sent
+        casos = {
+            "5xx tras los reintentos": (500, self.SIN_EMPEZAR),
+            "sin respuesta (timeout)": ("timeout", self.SIN_EMPEZAR),
+            "200 sin success": ("sin_success", self.SIN_EMPEZAR),
+            "4xx con la publicación en marcha": (400, {**self.SIN_EMPEZAR,
+                                                       "publishing_phase": {"status": "in_progress"}}),
+            "4xx con el Reel ya público": (400, {**self.SIN_EMPEZAR,
+                                                 "publishing_phase": {"status": "not_started",
+                                                                      "publish_status": "published"}}),
+        }
+        for i, (nombre, (error, estado)) in enumerate(casos.items()):
+            with self.subTest(caso=nombre):
+                api = GraphFalso(reel_falla_en="finish", error_finish=error, estados=[estado])
+                with self.assertRaises(Exception) as ctx:
+                    self.publicar(self.dia(f"dudoso_{i}", 45), api)
+                self.assertNotIsInstance(ctx.exception, publicar.ReelRechazado)
+                self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
+
     def test_error_con_el_reel_ya_publicado_no_duplica(self):
         # an error on a Reel whose status says it is public: reported, never a second (normal) video
         estados = [{"uploading_phase": {"status": "complete"}},
@@ -391,6 +441,44 @@ class PublicarFacebook(unittest.TestCase):
         self.assertEqual(publicar.plan_facebook("corto"), "Facebook: Reel (62.8 s, según el archivo)")
         self.assertTrue(publicar.plan_facebook("largo").startswith("Facebook: vídeo normal (164.3 s"))
         self.assertEqual(publicar.plan_facebook("fotos"), "Facebook: publicación con fotos")
+
+    # ------------------------------------------------------------ --probar_reel_facebook (draft only)
+
+    def probar_borrador(self, api, carpeta=""):
+        publicadas = os.path.join(self.dir.name, "publicadas.json")
+        with mock.patch.object(publicar, "PUBLICADAS", publicadas), \
+                mock.patch.dict(os.environ, {"PROBAR_CARPETA": carpeta}), \
+                mock.patch.object(publicar.sys, "argv", ["publicar.py", "--probar_reel_facebook"]), \
+                mock.patch.object(publicar.urllib.request, "urlopen", api):
+            publicar.main()
+        self.assertFalse(os.path.exists(publicadas))  # never recorded as published
+
+    def test_probar_reel_facebook_deja_un_borrador_sin_publicar(self):
+        self.dia("2099-01-01_manana", 164.33)  # too long for a Page Reel: skipped
+        self.dia("2099-01-01_tarde", 45)
+        api = GraphFalso(estados=[self.SIN_EMPEZAR])
+        self.probar_borrador(api)
+        fin = [p for p in api.peticiones if p["params"].get("upload_phase") == "finish"]
+        self.assertEqual(len(fin), 1)
+        self.assertEqual(fin[0]["params"]["video_state"], "DRAFT")
+        with open(os.path.join(self.dir.name, "2099-01-01_tarde", "reel.mp4"), "rb") as f:
+            self.assertEqual(api.peticiones[1]["cuerpo"], f.read())  # the short one was uploaded
+        self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
+
+    def test_probar_reel_facebook_sin_permiso_avisa_y_no_publica(self):
+        self.dia("2099-01-02_tarde", 45)
+        api = GraphFalso(reel_falla_en="finish", error_finish=403, estados=[self.SIN_EMPEZAR])
+        with self.assertRaises(SystemExit) as ctx:
+            self.probar_borrador(api)
+        self.assertEqual(ctx.exception.code, 1)
+        self.assertNotIn("/v24.0/PAGINA/videos", api.rutas())
+
+    def test_probar_reel_facebook_con_carpeta_de_video_largo_no_llama_a_facebook(self):
+        self.dia("2099-01-03_manana", 164.33)
+        api = GraphFalso()
+        with self.assertRaises(SystemExit):
+            self.probar_borrador(api, carpeta="2099-01-03_manana")
+        self.assertEqual(api.peticiones, [])
 
 
 if __name__ == "__main__":
